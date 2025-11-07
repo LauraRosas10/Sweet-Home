@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Moon, Sun, Star } from "lucide-react";
+import {  Star,ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../thema.jsx";
 
@@ -28,6 +28,36 @@ export const products = [
 },
 {
     id: 3,
+    name: "Cámara DSLR 4K",
+    category: "Electrónica",
+    price: 899.0,
+    rating: 4.9,
+    reviews: 203,
+    image: "https://lh3.googleusercontent.com/...",
+    alt: "Cámara profesional con lente grande",
+},
+{
+    id: 4,
+    name: "Laptop Pro",
+    category: "Electrónica",
+    price: 1299.0,
+    rating: 4.8,
+    reviews: 124,
+    image: "https://lh3.googleusercontent.com/...",
+    alt: "Laptop en un escritorio",
+},
+{
+    id: 5,
+    name: "Smartwatch 2",
+    category: "Accesorios",
+    price: 249.99,
+    rating: 4.6,
+    reviews: 89,
+    image: "https://lh3.googleusercontent.com/...",
+    alt: "Reloj inteligente con pantalla azul",
+},
+{
+    id: 6,
     name: "Cámara DSLR 4K",
     category: "Electrónica",
     price: 899.0,
@@ -107,6 +137,19 @@ return (
                 <p className="mt-3 text-2xl font-bold text-primary dark:text-primary">
                     ${product.price.toFixed(2)}
                 </p>
+
+                                  {/* ✅ Botón Añadir al carrito */}
+                <button
+                
+                     onClick={(e) => {
+                        e.stopPropagation(); // ❗ evita que vaya al detalle
+                        addToCart(product);
+                      }}
+                    className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 text-white py-2 font-semibold transition hover:bg-blue-700 active:scale-95"
+                >
+                    <ShoppingCart className="w-5 h-5" />
+                    Añadir al carrito
+                </button>
                 </div>
             </div>
             ))}

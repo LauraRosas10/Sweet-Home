@@ -1,5 +1,6 @@
 import { useTheme } from "../thema" // 🔹 hook global
 import { ArrowRight, Truck, Shield, Package } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Publicitario = () => {
 const { isDark } = useTheme(); // 🔹 usamos el estado global
@@ -7,13 +8,15 @@ const { isDark } = useTheme(); // 🔹 usamos el estado global
 return (
     <div className={isDark ? "dark bg-slate-900" : "bg-white"}>
     {/* Hero Section */}
-    <section className="relative overflow-hidden bg-gradient-to-b from-blue-50 to-white dark:from-blue-950/20 dark:to-slate-900 py-24 sm:py-32 lg:py-40">
+    <section className="relative overflow-hidden bg-gradient-to-br from-teal-100 via-cyan-100 to-blue-100 dark:from-teal-900/40 dark:via-cyan-900/40 dark:to-blue-900/30 py-24 sm:py-32 lg:py-40">
+
         <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center">
         <h1 className="text-balance text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl text-slate-900 dark:text-white">
             Descubre una nueva forma de{" "}
-            <span className="bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 bg-clip-text text-transparent">
-            comprar online
+            <span className="bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500 dark:from-sky-400 dark:via-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                comprar online
             </span>
+
         </h1>
 
         <p className="mt-6 text-pretty text-lg leading-8 text-slate-600 dark:text-slate-400 sm:text-xl">
@@ -21,10 +24,13 @@ return (
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Link to="/explorar" >
             <button className="group min-w-[200px] text-base bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 px-6 py-3 rounded-lg flex items-center justify-center text-white">
             Explorar productos
             <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </button>
+
+            </Link>
         </div>
         </div>
     </section>

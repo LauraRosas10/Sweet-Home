@@ -2,28 +2,133 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 
-import Layout from "../components/layout"; // Importamos el Layout
-
-//  Páginas públicas
+import Layout from "../components/layout";
 import Home from "../components/publico/home";
-import  ProductDetail from "../components/publico/detalleProducto";
+import ProductDetail from "../components/publico/detalleProducto";
+import CartPage from "../components/publico/carrito";
+import { UserProfile } from "../components/cliente/perfil";
+import { ModalInicio } from "../components/login/inicio";
+import ProductForm from "../components/cliente/vender_producto";
+import ProductExplorer from "../components/cliente/vista_productos";
+import PrivateRoute from "./privateroutes";
+import CategoryList from "../components/administrador/categorias";
+import UserList from "../components/administrador/usuarios";
+import ProductList from "../components/administrador/productos";
+import CategoryManagement from "../components/administrador/form_categoria";
+import ProductManagement from "../components/administrador/form_producto";
+import ProductManagementciente from "../components/cliente/form_producto";
+
+import UserManagement from "../components/administrador/usuariovisual";
+import TransactionsPage from "../components/cliente/transacciones";
+import CheckoutSimulator from "../components/cliente/metodo_pago";
+import OrderManagement from "../components/administrador/pedidos";
+import ProfilePage from "../components/cliente/perfil_edi";
 
 
 
 const AppRoutes = () => {
-    return (
-        <Routes>
-        {/* Agrupamos las rutas que deben tener navbar y footer */}
-        <Route element={<Layout />}>
-            {/*  RUTAS PÚBLICAS */}
-            <Route path="/" element={<Home />} />
-            <Route path="/producto/:id" element={<ProductDetail />} />
+return (
+    <Routes>
+    <Route element={<Layout />}>
+        
+        {/*  RUTAS PÚBLICAS */}
+        <Route path="/" element={<Home />} />
+        <Route path="/producto/:id" element={<ProductDetail />} />
+        <Route path="/pagecarrito" element={<CartPage />} />
+        <Route path="/login" element={<ModalInicio />} />
+        <Route path="/explorar" element={<ProductExplorer />} />
 
-            {/* Ruta no encontrada */}
-            <Route path="*" element={<h1>Página no encontrada</h1>} />
+        {/*  PERMITIDO SOLO CLIENTE */}
+        <Route
+        path="/perfil"
+        element={
+            <PrivateRoute allowedRoles={["cliente", "administrador"]}>
+            <ProfilePage />
+            </PrivateRoute>
+        }
+        />
+
+        <Route
+        path="/vender"
+        element={
+            <PrivateRoute allowedRoles={["cliente"]}>
+            <ProductForm />
+            </PrivateRoute>
+        }
+        />
+
+        
+        <Route
+        path="/transacciones"
+        element={
+            <PrivateRoute allowedRoles={["cliente"]}>
+            <TransactionsPage />
+            </PrivateRoute>
+        }
+        />
+
+        <Route
+        path="/productoscliente"
+        element={
+            <PrivateRoute allowedRoles={["cliente"]}>
+            <ProductManagementciente  />
+            </PrivateRoute>
+        }
+        />
+
+        <Route
+        path="/metodo-pago"
+        element={
+            <PrivateRoute allowedRoles={["cliente"]}>
+            <CheckoutSimulator />
+            </PrivateRoute>
+        }
+        />
+
+        {/*  PERMITIDO SOLO ADMIN */}
+
+        <Route
+        path="/categorias"
+        element={
+            <PrivateRoute allowedRoles={["administrador"]}>
+            <CategoryManagement />
+            </PrivateRoute>
+        }
+        />
+        
+        <Route
+        path="/usuarios"
+        element={
+            <PrivateRoute allowedRoles={["administrador"]}>
+            <UserManagement />
+            </PrivateRoute>
+        }
+        />
+
+        
+        <Route
+        path="/productos"
+        element={
+            <PrivateRoute allowedRoles={["administrador"]}>
+            <ProductManagement />
+            </PrivateRoute>
+        }
+        />
+
+        
+        <Route
+        path="/pedidos"
+        element={
+            <PrivateRoute allowedRoles={["administrador"]}>
+            <OrderManagement />
+            </PrivateRoute>
+        }
+        />
+
         </Route>
-        </Routes>
-    );
+
+    </Routes>
+);
 };
 
 export default AppRoutes;

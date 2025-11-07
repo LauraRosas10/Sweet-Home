@@ -31,7 +31,7 @@ export default function Footer() {
 const { isDark } = useTheme();
 
 return (
-    <footer className={`${isDark ? "bg-slate-900" : "bg-white"} relative border-t border-blue-200 dark:border-gray-700 overflow-hidden`}>
+    <footer className={`${isDark ? "bg-slate-900" : "bg-blue-100"} relative border-t border-blue-200 dark:border-gray-700 overflow-hidden`}>
     <div className="absolute inset-0 opacity-20">
         <div
         className="h-full w-full"
