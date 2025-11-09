@@ -42,7 +42,7 @@ return (
         <Route
         path="/perfil"
         element={
-            <PrivateRoute allowedRoles={["cliente", "administrador"]}>
+            <PrivateRoute allowedRoles={["Cliente", "Admin"]}>
             <ProfilePage />
             </PrivateRoute>
         }
@@ -51,7 +51,7 @@ return (
         <Route
         path="/vender"
         element={
-            <PrivateRoute allowedRoles={["cliente"]}>
+            <PrivateRoute allowedRoles={["Cliente"]}>
             <ProductForm />
             </PrivateRoute>
         }
@@ -61,7 +61,7 @@ return (
         <Route
         path="/transacciones"
         element={
-            <PrivateRoute allowedRoles={["cliente"]}>
+            <PrivateRoute allowedRoles={["Cliente"]}>
             <TransactionsPage />
             </PrivateRoute>
         }
@@ -70,7 +70,7 @@ return (
         <Route
         path="/productoscliente"
         element={
-            <PrivateRoute allowedRoles={["cliente"]}>
+            <PrivateRoute allowedRoles={["Cliente"]}>
             <ProductManagementciente  />
             </PrivateRoute>
         }
@@ -79,7 +79,7 @@ return (
         <Route
         path="/metodo-pago"
         element={
-            <PrivateRoute allowedRoles={["cliente"]}>
+            <PrivateRoute allowedRoles={["Cliente"]}>
             <CheckoutSimulator />
             </PrivateRoute>
         }
@@ -90,7 +90,7 @@ return (
         <Route
         path="/categorias"
         element={
-            <PrivateRoute allowedRoles={["administrador"]}>
+            <PrivateRoute allowedRoles={["Admin"]}>
             <CategoryManagement />
             </PrivateRoute>
         }
@@ -99,7 +99,7 @@ return (
         <Route
         path="/usuarios"
         element={
-            <PrivateRoute allowedRoles={["administrador"]}>
+            <PrivateRoute allowedRoles={["Admin"]}>
             <UserManagement />
             </PrivateRoute>
         }
@@ -109,7 +109,7 @@ return (
         <Route
         path="/productos"
         element={
-            <PrivateRoute allowedRoles={["administrador"]}>
+            <PrivateRoute allowedRoles={["Admin"]}>
             <ProductManagement />
             </PrivateRoute>
         }
@@ -119,7 +119,7 @@ return (
         <Route
         path="/pedidos"
         element={
-            <PrivateRoute allowedRoles={["administrador"]}>
+            <PrivateRoute allowedRoles={["Admin"]}>
             <OrderManagement />
             </PrivateRoute>
         }

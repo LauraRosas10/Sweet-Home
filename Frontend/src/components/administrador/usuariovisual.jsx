@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import api from "../../api/axiosConfig"
 import UserList from "./usuarios"
 import UserForm from "./form_usuario"
 
@@ -9,6 +10,20 @@ export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("")
   const [showForm, setShowForm] = useState(false)
   const [editingUser, setEditingUser] = useState(null)
+
+  useEffect(() => {
+    fetchUsers()
+  }, [])
+
+  const fetchUsers = async () => {
+    try {
+      const response = await api.get("/usuarios/")
+      setUsers(response.data)
+    } catch (error) {
+      console.error("Error fetching users:", error)
+      alert("Error al cargar los usuarios")
+    }
+  }
 
   const handleAddUser = () => {
     setEditingUser(null)
@@ -20,24 +35,45 @@ export default function UserManagement() {
     setShowForm(true)
   }
 
-  const handleDeleteUser = (id) => {
-    setUsers(users.filter(u => u.id !== id))
-  }
+  const handleDeleteUser = async (id) => {
+    if (!window.confirm("¿Estás seguro de eliminar este usuario?")) return
 
-  const handleSubmitUser = (data) => {
-    if (editingUser) {
-      // Actualizar
-      setUsers(users.map(u => (u.id === editingUser.id ? { ...u, ...data } : u)))
-    } else {
-      // Crear
-      setUsers([...users, { id: Date.now(), ...data }])
+    try {
+      await api.delete(`/usuarios/${id}`)
+      setUsers(users.filter(u => u._id !== id))
+      alert("Usuario eliminado correctamente")
+    } catch (error) {
+      console.error("Error deleting user:", error)
+      alert("Error al eliminar el usuario")
     }
-    setShowForm(false)
   }
 
-  const filteredUsers = users.filter(u =>
-    u.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const handleSubmitUser = async (data) => {
+    try {
+      if (editingUser && editingUser._id) {
+        // Actualizar usuario existente
+        const response = await api.put(`/usuarios/${editingUser._id}`, data)
+        const updatedUser = response.data.data;
+        setUsers(users.map(user => (user._id === editingUser._id ? updatedUser : user)))
+        alert("Usuario actualizado correctamente")
+      } else {
+        // Crear nuevo usuario
+        const response = await api.post("/usuarios/register", data)
+        setUsers([...users, response.data])
+        alert("Usuario creado correctamente")
+      }
+      setShowForm(false)
+      setEditingUser(null)
+    } catch (error) {
+      console.error("Error saving user:", error)
+      alert("Error al guardar el usuario")
+    }
+  }
+
+  const filteredUsers = users.filter(u => {
+    const fullName = `${u.Nombre ?? ""} ${u.Apellidos ?? ""}`
+    return fullName.toLowerCase().includes(searchTerm.toLowerCase())
+  })
 
   return (
     <>
@@ -45,7 +81,7 @@ export default function UserManagement() {
         <UserForm
           initialData={editingUser}
           onSubmit={handleSubmitUser}
-          onCancel={() => setShowForm(false)}
+          onCancel={() => { setShowForm(false); setEditingUser(null) }}
         />
       ) : (
         <UserList

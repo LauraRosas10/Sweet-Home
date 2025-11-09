@@ -14,6 +14,9 @@ const [openCart, setOpenCart] = useState(false);
 const [openModal, setOpenModal] = useState(false);
 const [loginForSelling, setLoginForSelling] = useState(false);
 
+function onLoginSuccess(role) {
+    console.log(role.toUpperCase());
+}
 
 const role = localStorage.getItem("role");
 const token = localStorage.getItem("token");
@@ -40,7 +43,7 @@ return (
             </Link>
             {/*  Buscador o Panel Admin */}
             <div className="mx-4 flex-1 w-full">
-            {role === "administrador" ? (
+            {role === "Admin" ? (
                 <h2 className="text-xl font-bold text-center text-dark dark:text-white">
                 PANEL DE ADMINISTRADOR
                 </h2>
@@ -62,7 +65,7 @@ return (
             <div className="flex items-center gap-2">
 
             {/*  BOTONES ADMIN */}
-            {role === "administrador" && (
+            {role === "Admin" && (
                 <>
                 <Link to="/usuarios">
                     <button className="hidden sm:flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-accent px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:scale-105">
@@ -81,18 +84,13 @@ return (
                     Productos
                     </button>
                 </Link>
-                <Link to="/pedidos">
-                    <button className="hidden sm:flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-accent px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:scale-105">
-                    Pedidos
-                    </button>
-                </Link>
 
 
                 </>
             )}
 
             {/*  CLIENTE: VENDER */}
-            {role === "cliente" && (
+            {role === "Cliente" && (
                <button
   onClick={() => {
     if (!token) {
@@ -111,7 +109,7 @@ return (
             )}
 
             {/* ✅ CLIENTE: CARRITO */}
-            {role !== "administrador" && (
+            {role !== "Admin" && (
                 <>
                 <button
                     onClick={() => setOpenCart(true)}
@@ -146,7 +144,7 @@ return (
             return;
         }
 
-        if (role === "cliente") {
+        if (role === "Cliente") {
             navigate("/vender");
         }
 
@@ -165,7 +163,7 @@ return (
     onLoginSuccess={(role) => {
         setOpenModal(false);
 
-        if (role === "cliente" && loginForSelling) {
+        if (role === "Cliente" && loginForSelling) {
             navigate("/vender");
         }
         else{
@@ -182,7 +180,7 @@ return (
 
             {/* LOGUEADO: MENÚ DE USUARIO */}
 {/* ✅ MENÚ SOLO PARA CLIENTE */}
-{token && role === "cliente" && (
+{token && role === "Cliente" && (
     <UserDropdownMenu
         userName="Usuario"
         userAvatar="https://i.pravatar.cc/150?img=4"

@@ -38,7 +38,7 @@ return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {users.map((user) => (
             <div
-                key={user.id}
+                key={user._id} 
                 className="h-full flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-slate-100 dark:border-slate-700 overflow-hidden group hover:border-blue-300 dark:hover:border-blue-700"
             >
                 {/* Card Content */}
@@ -46,13 +46,13 @@ return (
                 {/* Avatar and User Info */}
                 <div className="flex items-start gap-4 mb-4">
                     <img
-                    src={user.avatar || "/placeholder.svg?height=48&width=48&query=user+avatar"}
-                    alt={user.name}
+                    src={user.Foto || "/placeholder.svg?height=48&width=48&query=user+avatar"}
+                    alt={user.Nombre}
                     className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border-2 border-slate-200 dark:border-slate-700"
                     />
                     <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white line-clamp-1">{user.name}</h3>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm line-clamp-1 mt-1">{user.email}</p>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white line-clamp-1">{user.Nombre}</h3>
+                    <p className="text-slate-600 dark:text-slate-400 text-sm line-clamp-1 mt-1">{user.Email}</p>
                     </div>
                 </div>
 
@@ -60,16 +60,16 @@ return (
                 <div className="mb-4">
                     <span
                     className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
-                        user.role === "admin"
+                        user.Rol === "Admin"
                         ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
-                        : user.role === "seller"
+                        : user.Rol === "Cliente"
                             ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
                             : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                     }`}
                     >
-                    {user.role === "admin" && "Administrador"}
-                    {user.role === "seller" && "Vendedor"}
-                    {user.role === "client" && "Cliente"}
+                    {user.Rol === "Admin" && "Admin"}
+                    {user.Rol=== "Cliente" && "Cliente"}
+      
                     </span>
                 </div>
 
@@ -85,13 +85,13 @@ return (
                     <Edit size={16} />
                     Editar
                     </button>
-                    <button
-                    onClick={() => onDeleteUser(user.id)}
+                    {/* <button
+                    onClick={() => onDeleteUser(user._id)}
                     className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 font-medium transition-all text-sm"
                     >
                     <Trash2 size={16} />
                     Eliminar
-                    </button>
+                    </button> */}
                 </div>
                 </div>
             </div>

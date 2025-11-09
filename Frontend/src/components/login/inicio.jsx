@@ -1,9 +1,12 @@
 import React, { useState, useRef } from "react";
 import { Store, Mail, Lock, Eye, EyeOff, Upload, X } from "lucide-react";
+import axios from "axios";
 
-export function ModalInicio({ open, onOpenChange ,onLoginSuccess}) {
+export function ModalInicio({ open, onOpenChange, onLoginSuccess }) {
 const [authMode, setAuthMode] = useState("login");
 const [showPassword, setShowPassword] = useState(false);
+
+// Datos del usuario
 const [email, setEmail] = useState("");
 const [password, setPassword] = useState("");
 const [firstName, setFirstName] = useState("");
@@ -13,6 +16,9 @@ const [photoPreview, setPhotoPreview] = useState(null);
 const [photoFile, setPhotoFile] = useState(null);
 const fileInputRef = useRef(null);
 
+const API_URL = "http://localhost:5100"; // URL Backend
+
+// Manejo de foto
 const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -29,51 +35,87 @@ const handleRemovePhoto = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
 };
 
-//para cerrar sesión
-    const logout = () => {
+// Logout
+const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     window.location.href = "/";
-    };
+};
+// Login con backend
+const loginUser = async () => {
+try {
+    const response = await axios.post(`${API_URL}/api/usuarios/login`, {
+    Email: email,       // ⚠ Debe coincidir con lo que espera el backend
+    Contraseña: password // ⚠ Debe coincidir con lo que espera el backend
+    });
+
+    console.log(response.data);
+
+const { token, role } = response.data;
+
+localStorage.setItem("token", token);
+localStorage.setItem("role", role);
+
+// PASAR el rol al callback
+if (onLoginSuccess) onLoginSuccess(role);
 
 
+    window.location.href = "/";
 
-const handleSubmit = (e) => {
-e.preventDefault();
-
-const adminUser = { email: "admin@gmail.com", password: "123456", role: "administrador" };
-const clientUser = { email: "cliente@gmail.com", password: "123456", role: "cliente" };
-
-let loggedUser = null;
-
-if (email === adminUser.email && password === adminUser.password) {
-    loggedUser = adminUser;
-} else if (email === clientUser.email && password === clientUser.password) {
-    loggedUser = clientUser;
-}
-
-
-
-if (loggedUser) {
-    localStorage.setItem("token", "fake_jwt_123"); 
-    localStorage.setItem("role", loggedUser.role);
-
-        if (onLoginSuccess) {
-      onLoginSuccess(loggedUser.role);
-      return;
-    }
-
-        alert(`Bienvenido ${loggedUser.role.toUpperCase()}`);
-        if (loggedUser.role === "administrador") {
-        window.location.href = "/";
-        } else {
-        window.location.href = "/perfil";
-        }
-} else {
-    alert("Credenciales incorrectas");
+} catch (error) {
+    console.error(error);
+    alert(error.response?.data?.error || "Error al iniciar sesión");
 }
 };
 
+
+// Registro con backend
+const registerUser = async () => {
+try {
+    const formData = {
+    Nombre: firstName,
+    Apellidos: lastName,
+    Email: email,
+    Contraseña: password,
+    Rol: "Cliente",         // valor por defecto
+    Telefono: phone,
+    Descripcion: "",
+    Foto: ""                // se llenará si hay foto
+    };
+
+    if (photoFile) {
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+        formData.Foto = reader.result; // aquí va base64
+
+        // Enviar al backend
+        await axios.post("http://localhost:5100/api/usuarios/register", formData);
+
+        alert("Usuario registrado correctamente");
+        setAuthMode("login");
+    };
+    reader.readAsDataURL(photoFile); // convierte a base64
+    } else {
+    await axios.post("http://localhost:5100/api/usuarios/register", formData);
+    alert("Usuario registrado correctamente");
+    setAuthMode("login");
+    }
+} catch (error) {
+    console.error(error);
+    alert(error.response?.data?.error || "Error al registrarse");
+}
+};
+
+
+// Submit del formulario
+const handleSubmit = (e) => {
+    e.preventDefault();
+    if (authMode === "login") {
+    loginUser();
+    } else {
+    registerUser();
+    }
+};
 
 if (!open) return null;
 
@@ -88,11 +130,14 @@ return (
         <X className="h-5 w-5" />
         </button>
 
-        {/* Imagen de usuario */}
+        {/* Imagen usuario */}
         <div className="flex justify-center mb-4">
         <div className="w-20 h-20 rounded-full border-4 border-white overflow-hidden flex items-center justify-center bg-gray-200">
             <img
-            src={photoPreview || "https://static.vecteezy.com/system/resources/previews/019/879/198/original/user-icon-on-transparent-background-free-png.png"}
+            src={
+                photoPreview ||
+                "https://static.vecteezy.com/system/resources/previews/019/879/198/original/user-icon-on-transparent-background-free-png.png"
+            }
             alt="Usuario"
             className="w-full h-full object-cover"
             />
@@ -135,7 +180,6 @@ return (
         <form onSubmit={handleSubmit} className="space-y-4">
         {authMode === "register" && (
             <>
-            {/* Campos adicionales */}
             <div>
                 <label className="block text-sm font-medium mb-1">Nombre</label>
                 <input
