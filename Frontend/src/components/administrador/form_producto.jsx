@@ -400,7 +400,7 @@ export default function ProductManagement() {
                 </label>
 
                 {/* Categoría */}
-                <label className="flex flex-col">
+                <label className="flex flex-col cursor-pointer">
                     <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Categoría</span>
                     <select
                     name="categoryId"
@@ -410,9 +410,9 @@ export default function ProductManagement() {
                     >
                     {categories.length === 0 && <option value="">Cargando categorías...</option>}
                     {categories.map(cat => (
-                        <option key={cat._id} value={cat._id}>
-                            {cat.Nombre}
-                        </option>
+                      <option key={cat._id} value={(cat._id)}>
+                        {cat.Nombre}
+                      </option>
                     ))}
                     </select>
                 </label>
@@ -420,7 +420,7 @@ export default function ProductManagement() {
 
               {/* Usuario Creador - Renderizado Condicional */}
               {!editingId && ( 
-                  <label className="flex flex-col">
+                  <label className="flex flex-col cursor-pointer">
                     <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Usuario Creador</span>
                     <select
                       name="userId"
@@ -431,8 +431,8 @@ export default function ProductManagement() {
                     >
                       {users.length === 0 && <option value="">Cargando usuarios...</option>}
                       {users.map(user => (
-                          <option key={user._id} value={user._id}>
-                              {user.Nombre || user.Email} ({user.Email || "Sin email"})
+                          <option key={user._id} value={(user._id)}>
+                            {user.Nombre || user.Email} ({user.Email || "Sin email"})
                           </option>
                       ))}
                     </select>
