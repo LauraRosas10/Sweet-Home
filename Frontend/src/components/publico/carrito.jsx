@@ -3,6 +3,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { ModalInicio } from "../login/inicio"
 
+
 import { useCart } from "../../context/CartContext"
 
 export default function CartPage() {
@@ -46,14 +47,7 @@ return (
         <h1 className="flex-1 text-center text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
         Shopping Cart
         </h1>
-        <button
-        onClick={clearCartContext}
-        className="flex items-center justify-center p-2 -mr-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all duration-200 group"
-        >
-        <span className="material-symbols-outlined text-2xl text-gray-700 dark:text-gray-300 group-hover:text-red-500 dark:group-hover:text-red-400">
-            delete
-        </span>
-        </button>
+        
     </header>
 
     <main className="flex-grow px-6 py-8">

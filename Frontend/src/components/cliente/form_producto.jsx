@@ -3,6 +3,7 @@ import ProductList from "./productos.jsx";
 import { Package, Plus } from "lucide-react";
 import axios from "axios";
 import { Image as ImageIcon } from "lucide-react";
+import { showToast } from "../toast.js";
 
 
 export default function ProductManagement() {
@@ -98,7 +99,7 @@ export default function ProductManagement() {
     // --- CREAR PRODUCTO ---
     if (!editingId) {
       if (!dataSend.Imagen || !isNewBase64) {
-        alert("Debes seleccionar una imagen para crear el producto.");
+        showToast("Debes seleccionar una imagen para crear el producto.");
         return;
       }
     
@@ -108,7 +109,7 @@ export default function ProductManagement() {
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
 
-      alert("Producto creado correctamente ✔️");
+      showToast("Producto creado correctamente ");
 
     }
 
@@ -139,7 +140,7 @@ export default function ProductManagement() {
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
 
-      alert("Producto actualizado correctamente ✔️");
+      showToast("Producto actualizado correctamente ");
     }
 
     await fetchProducts();
@@ -147,7 +148,8 @@ export default function ProductManagement() {
 
   } catch (err) {
     console.error("Error guardando:", err);
-    alert("❌ Error al guardar el producto");
+  
+    showToast("Todos los campos son obligatorios" );
   }
 };
 
@@ -171,11 +173,11 @@ export default function ProductManagement() {
         )
       );
 
-      alert(`Estado actualizado a: ${newEstado}`);
+      showToast(`Estado actualizado a: ${newEstado}`);
 
     } catch (err) {
       console.error(err);
-      alert("❌ Error al cambiar estado");
+      showToast("❌ Error al cambiar estado");
     }
   };
 
@@ -210,7 +212,7 @@ export default function ProductManagement() {
       setProducts(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Error cargando productos:", err);
-      alert("❌ Error al cargar productos");
+      showToast("❌ Error al cargar productos");
       setProducts([]);
     }
   };

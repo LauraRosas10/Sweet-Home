@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTheme } from "../thema.jsx"; 
 import axios from "axios";
 import { useCart } from "../../context/CartContext.jsx"; 
+import { showToast } from "../toast.js";
 
 // URL de la API (Ajusta si es necesario)
 const API_CATEGORIAS_URL = "http://localhost:5100/api/categorias";
@@ -24,7 +25,7 @@ export default function Productos({ onCategoriesLoaded, search, filter }) {
     
     // categoryMap: { 'ID_Mongo': 'Nombre_Categoria' }
     const [categoryMap, setCategoryMap] = useState({}); 
-    const { addToCart } = useCart();
+    const { cartItems,addToCart } = useCart();
 
 
     // --- SECCIÓN DE FETCHING DE DATOS ---
@@ -163,6 +164,7 @@ export default function Productos({ onCategoriesLoaded, search, filter }) {
     // Función que se dispara al hacer click en el carrito de la tarjeta 
     const handleAddToCart = (product) => {
         addToCart(product, 1);
+    
     };
 
     return (
@@ -190,7 +192,12 @@ export default function Productos({ onCategoriesLoaded, search, filter }) {
 
                 {/* Grid de productos */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                    {filteredProducts.map((product) => (
+                    {filteredProducts.map((product) => {
+    const isInCart = cartItems.some(item => item.id === product.id) || false;
+    return (
+
+    
+
                     <div
                         key={product.id}
                         onClick={() => navigate(`/producto/${product.id}`)}
@@ -228,19 +235,31 @@ export default function Productos({ onCategoriesLoaded, search, filter }) {
                         </div>
 
                         <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleAddToCart(product);
-                            }}
-                            className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 text-white py-2 font-semibold transition hover:bg-blue-700 active:scale-95 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                            disabled={product.stock === 0}
-                        >
-                            <ShoppingCart className="w-5 h-5" />
-                            {product.stock === 0 ? "Agotado" : "Añadir al carrito"}
-                        </button>
+  onClick={(e) => {
+    e.stopPropagation();
+    handleAddToCart(product);
+  }}
+  className={`mt-4 w-full flex items-center justify-center gap-2 rounded-xl py-2 font-semibold transition active:scale-95 disabled:bg-gray-400 disabled:cursor-not-allowed
+    ${isInCart 
+        ? "bg-green-600 hover:bg-green-700 text-white" 
+        : "bg-blue-600 hover:bg-blue-700 text-white"
+    }
+  `}
+  disabled={product.stock === 0}
+>
+  <ShoppingCart className="w-5 h-5" />
+
+  {product.stock === 0
+    ? "Agotado"
+    : isInCart 
+        ? "En el carrito ✔️"
+        : "Añadir al carrito"}
+</button>
+
                         </div>
                     </div>
-                    ))}
+        )
+                     })}
                 </div>
 
                 {/* Mensaje dinámico si no hay productos filtrados */}

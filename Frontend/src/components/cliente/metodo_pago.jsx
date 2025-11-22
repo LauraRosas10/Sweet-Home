@@ -3,6 +3,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { createOrder } from "../../api/pedidos.js"
 import { useCart } from "../../context/CartContext.jsx"
+import { showToast } from "../toast.js"
 
 
 export default function CheckoutSimulator() {
@@ -131,7 +132,8 @@ const handleCompleteOrder = async () => {
     setOrderCompleted(true);
   } catch (error) {
     console.error("Error creando pedido:", error);
-    alert("Hubo un error al procesar el pedido.");
+    console.log("Error detalles:", error.response?.data);
+    showToast(error.response?.data?.error || "Error al crear el pedido.");
   }
 };
 

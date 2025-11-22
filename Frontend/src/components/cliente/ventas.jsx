@@ -1,164 +1,206 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { DollarSign, Search, Clock, AlertTriangle, Package } from "lucide-react";
 
-// función segura para formatear fechas
 function formatDate(dateString) {
-  if (!dateString) return "N/A";
-  const date = new Date(dateString);
-  if (isNaN(date)) return "N/A";
-  return date.toISOString().split("T")[0];
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    if (isNaN(date)) return "N/A";
+    return date.toISOString().split("T")[0];
 }
 
 export default function SalesTransactions() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [salesData, setSalesData] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [salesData, setSalesData] = useState([]);   // <- Data original
+    const [flattenedData, setFlattenedData] = useState([]); // <- Todos los productos
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchSales = async () => {
-      try {
-        const token = localStorage.getItem("token");
+    const API_URL = "http://localhost:5100";
 
-        const res = await axios.get(
-          "http://localhost:5100/api/pedidos/misventas",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
+    useEffect(() => {
+        const fetchSales = async () => {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                setError("No hay una sesión activa. Por favor, inicia sesión.");
+                setIsLoading(false);
+                return;
             }
-          }
-        );
 
-        setSalesData(res.data);
-        console.log("VENTAS RECIBIDAS:", res.data);
+            try {
+                const res = await axios.get(`${API_URL}/api/pedidos/misventas`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
 
-      } catch (error) {
-        console.log("Error obteniendo ventas:", error);
-      }
+                setSalesData(res.data);
+
+                // 🔥 APLANA CADA PEDIDO EN MUCHAS FILAS, UNA POR PRODUCTO
+                const flat = res.data.flatMap(pedido =>
+                    pedido.Productos.map(prod => ({
+                        _id: pedido._id + "_" + prod._id,
+                        producto: prod.Producto,
+                        cantidad: prod.Cantidad,
+                        precio: prod.Producto.Precio,
+                        comprador: pedido.Usuario,
+                        fecha: pedido.createdAt,
+                        estado: pedido.Estado
+                    }))
+                );
+
+                setFlattenedData(flat);
+                console.log("REGISTROS APLANADOS:", flat);
+
+                setError(null);
+            } catch (err) {
+                console.error("Error obteniendo ventas:", err);
+                const msg = err.response?.data?.error || "Error de conexión con el servidor.";
+                setError(msg);
+                setSalesData([]);
+                setFlattenedData([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchSales();
+    }, []);
+
+    // 🔍 FILTRAR POR NOMBRE DE PRODUCTO
+    const filtered = flattenedData.filter(item =>
+        item.producto?.Nombre?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const getStateStyles = (state) => {
+        const lower = state?.toLowerCase();
+        switch (lower) {
+            case "enviado":
+                return { color: "text-yellow-800", bg: "bg-yellow-100", dot: "bg-yellow-500" };
+            case "entregado":
+                return { color: "text-green-800", bg: "bg-green-100", dot: "bg-green-500" };
+            case "cancelado":
+                return { color: "text-red-800", bg: "bg-red-100", dot: "bg-red-500" };
+            default:
+                return { color: "text-blue-800", bg: "bg-blue-100", dot: "bg-blue-500" };
+        }
     };
 
-    fetchSales();
-  }, []);
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-48 mt-8">
+                <Clock className="animate-spin h-6 w-6 text-blue-500" />
+                <span className="ml-2">Cargando ventas...</span>
+            </div>
+        );
+    }
 
-  // 🔍 FILTRO POR NOMBRE DE PRODUCTO
-  const filteredData = salesData.filter((item) =>
-    item.Producto?.Nombre?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    if (error) {
+        return (
+            <div className="p-6 mt-8 bg-red-100 border border-red-300 rounded-xl shadow-lg">
+                <div className="flex items-center space-x-3 text-red-700">
+                    <AlertTriangle className="h-6 w-6" />
+                    <h2 className="text-lg font-semibold">Error al cargar ventas</h2>
+                </div>
+                <p className="mt-2 text-sm">{error}</p>
+            </div>
+        );
+    }
 
-  return (
-    <div className="mt-2 @container">
+    if (flattenedData.length === 0) {
+        return (
+            <div className="p-6 mt-8 bg-gray-100 rounded-xl text-center">
+                <Package className="h-10 w-10 mx-auto text-gray-400 mb-3" />
+                <p className="text-lg font-semibold">¡Aún no has realizado ventas!</p>
+            </div>
+        );
+    }
 
-      {/* 🔎 Barra de búsqueda */}
-<div className="mb-3">
-  <div className="relative">
-    <input
-      type="text"
-      placeholder="Buscar por nombre de producto..."
-      className="
-        w-full px-4 py-2.5
-        rounded-xl
-        border border-gray-300 dark:border-gray-700
-        bg-white dark:bg-gray-800
-        text-gray-900 dark:text-white
-        shadow-sm
-        focus:outline-none
-        focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-600
-        focus:border-blue-400
-        transition-all
-        pl-10
-      "
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-    />
-
-    {/* Ícono de búsqueda */}
-    <svg
-      className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 18.5a7.5 7.5 0 006.15-3.85z"
-      />
-    </svg>
-  </div>
-</div>
-
-
-      <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-        <table className="w-full text-gray-900 dark:text-gray-200">
-          <thead className="bg-gray-50 dark:bg-gray-800">
-            <tr className="text-left">
-              <th className="px-4 py-3 w-2/12">Producto</th>
-              <th className="px-4 py-3 w-3/12">Comprador</th>
-              <th className="px-4 py-3 w-2/12">Fecha</th>
-              <th className="px-4 py-3 w-2/12">Precio</th>
-              <th className="px-4 py-3 w-2/12">Estado</th>
-              <th className="px-4 py-3 w-1/12">Acciones</th>
-            </tr>
-          </thead>
-
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-            {filteredData.map((item) => (
-              <tr key={item._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                
-                {/* PRODUCTO */}
-                <td className="px-4 py-2 h-[72px]">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="bg-center bg-no-repeat aspect-square bg-cover rounded-lg w-10 h-10"
-                      style={{ backgroundImage: `url("${item.Producto?.Imagen || ""}")` }}
+    return (
+        <div className="mt-2 @container">
+            {/* 🔍 Barra de búsqueda */}
+            <div className="mb-4">
+                <div className="relative">
+                    <input
+                        type="text"
+                        placeholder="Buscar por nombre de producto..."
+                        className="w-full px-4 py-2.5 pl-10 rounded-xl border bg-white shadow-sm"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                    <span className="font-medium">
-                      {item.Producto?.Nombre || "N/A"}
-                    </span>
-                  </div>
-                </td>
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                </div>
+            </div>
 
-                {/* COMPRADOR */}
-                <td className="px-4 py-2">
-                  {item.Usuario?.Nombre || "N/A"}
-                </td>
+            <div className="overflow-x-auto rounded-xl border bg-white shadow-lg">
+                <table className="min-w-full">
+                    <thead className="bg-gray-50">
+                        <tr className="text-left text-sm font-semibold uppercase text-gray-600">
+                            <th className="px-4 py-3">Producto</th>
+                            <th className="px-4 py-3">Comprador</th>
+                            <th className="px-4 py-3">Fecha</th>
+                            <th className="px-4 py-3 text-right">Precio</th>
+                            <th className="px-4 py-3 text-right">Cantidad</th>
+                            <th className="px-4 py-3">Estado</th>
+                        </tr>
+                    </thead>
 
-                {/* FECHA */}
-                <td className="px-4 py-2 text-gray-500 dark:text-gray-400">
-                  {formatDate(item.createdAt)}
-                </td>
+                    <tbody className="divide-y">
+                        {filtered.map(item => {
+                            const styles = getStateStyles(item.estado);
 
-                {/* PRECIO */}
-                <td className="px-4 py-2">
-                  ${item.Producto?.Precio || 0}
-                </td>
+                            return (
+                                <tr key={item._id} className="hover:bg-gray-50 transition">
+                                    <td className="px-4 py-3">
+                                        <div className="flex items-center gap-3">
+                                            <div
+                                                className="w-10 h-10 rounded-lg bg-cover bg-center border"
+                                                style={{
+                                                    backgroundImage: `url("${item.producto?.Imagen ||
+                                                        "https://placehold.co/100x100"}")`
+                                                }}
+                                            />
+                                            <span className="truncate">
+                                                {item.producto?.Nombre || "Desconocido"}
+                                            </span>
+                                        </div>
+                                    </td>
 
-                {/* ESTADO */}
-                <td className="px-4 py-2">
-                  <div className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300">
-                    <span className="size-2 rounded-full bg-blue-500"></span>
-                    {item.Estado || "Pendiente"}
-                  </div>
-                </td>
+                                    <td className="px-4 py-3">
+                                        {item.comprador?.Nombre || "N/A"}
+                                    </td>
 
-                {/* ACCIONES */}
-                <td className="px-4 py-2">
-                  <a className="text-blue-600 dark:text-blue-400 hover:underline" href="#">
-                    Ver detalles
-                  </a>
-                </td>
+                                    <td className="px-4 py-3 text-gray-500">
+                                        {formatDate(item.fecha)}
+                                    </td>
 
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                                    <td className="px-4 py-3 text-right font-bold">
+                                        ${item.precio.toLocaleString("es-CO")}
+                                    </td>
 
-        {filteredData.length === 0 && (
-          <p className="p-4 text-center text-gray-500">
-            No se encontraron ventas con ese nombre.
-          </p>
-        )}
+                                    <td className="px-4 py-3 text-right font-bold">
+                                        {item.cantidad}
+                                    </td>
 
-      </div>
-    </div>
-  );
+                                    <td className="px-4 py-3">
+                                        <div className={`inline-flex items-center gap-1.5 py-1 px-2 rounded-full text-xs font-semibold ${styles.bg} ${styles.color}`}>
+                                            <span className={`w-2 h-2 rounded-full ${styles.dot}`} />
+                                            {item.estado}
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+
+                        {filtered.length === 0 && (
+                            <tr>
+                                <td colSpan="6" className="py-4 text-center text-gray-500">
+                                    No se encontraron ventas que coincidan.
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
 }

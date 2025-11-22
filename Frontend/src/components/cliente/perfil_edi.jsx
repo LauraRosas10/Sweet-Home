@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 // Importamos la instancia de Axios configurada desde api.js
 import api from "../../api/axiosConfig";
+import { useNavigate } from "react-router-dom";
+import { showToast } from "../toast.js";
 
 // Si el email se guarda en localStorage durante el login, lo inicializamos aquí.
 const initialEmail =
   typeof window !== "undefined" ? localStorage.getItem("userEmail") || "" : "";
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
   const [userId, setUserId] = useState(null);
   const [profileImage, setProfileImage] = useState(
     "https://api.dicebear.com/7.x/avataaars/svg?seed=Default" // Valor por defecto
@@ -120,11 +123,11 @@ export default function ProfilePage() {
       const res = await api.put(`/usuarios/${userId}`, body);
       console.log("✅ Actualizado:", res.data);
       // **IMPORTANTE: En una aplicación real, no usar 'alert()'. Dejaré este como un mensaje temporal.**
-      alert("Datos actualizados correctamente!");
+      showToast("Datos actualizados correctamente!");
     } catch (err) {
       console.error("❌ Error al actualizar:", err);
       // **IMPORTANTE: En una aplicación real, no usar 'alert()'. Dejaré este como un mensaje temporal.**
-      alert("No se pudo actualizar el perfil. Revisa la conexión y el token.");
+      showToast("No se pudo actualizar el perfil. Revisa la conexión y el token.");
     }
   };
 
@@ -299,12 +302,14 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-800">
-                  <button
-                    type="button"
-                    className="w-full sm:w-auto h-12 px-8 border-2 border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition duration-150"
-                  >
-                    Cancelar
-                  </button>
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="w-full sm:w-auto h-12 px-8 border-2 border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition duration-150"
+            >
+              Cancelar
+            </button>
+
 
                   <button
                     type="submit"

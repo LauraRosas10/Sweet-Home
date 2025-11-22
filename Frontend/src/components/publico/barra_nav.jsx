@@ -5,6 +5,7 @@ import CartModal from "./modal_carrito.jsx";
 import { UserDropdownMenu } from "../cliente/menu_usuario.jsx";
 import { ModalInicio } from "../login/inicio.jsx";
 import { Link, useNavigate } from "react-router-dom";
+import { showToast } from "../toast.js";
 
 export default function Header() {
 const [searchQuery, setSearchQuery] = useState("");
@@ -13,8 +14,24 @@ const [openCart, setOpenCart] = useState(false);
 const [openModal, setOpenModal] = useState(false);
 const [loginForSelling, setLoginForSelling] = useState(false);
 
+
+
 const role = localStorage.getItem("role");
 const token = localStorage.getItem("token");
+
+// 🟢 LEER INFORMACIÓN DEL USUARIO DE LOCALSTORAGE
+const userName = localStorage.getItem("userName");
+const userPhoto = localStorage.getItem("userPhoto");
+const userId = localStorage.getItem("userId");
+
+const safeUserPhoto =
+    userPhoto &&
+    userPhoto !== "null" &&
+    userPhoto !== "undefined" &&
+    userPhoto.trim() !== ""
+        ? userPhoto
+        : "https://i.pinimg.com/474x/d9/d8/8e/d9d88e3d1f74e2b8ced3df051cecb81d.jpg";
+
 const navigate = useNavigate();
 
 // 🟢 NUEVA FUNCIÓN: Maneja la búsqueda al presionar Enter y redirige
@@ -27,12 +44,23 @@ const handleSearchSubmit = (e) => {
         const encodedQuery = encodeURIComponent(searchQuery.trim());
         
         // Navegamos a /productos con el parámetro de búsqueda
-        // Usamos replace para que si el usuario ya está en /productos, se actualicen los parámetros
         navigate(`/explorar?query=${encodedQuery}`);
-
-        // Opcional: limpiar la barra de búsqueda después de la navegación
-        // setSearchQuery('');
     }
+};
+
+// Función para el logout que limpia todos los ítems del usuario
+const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userPhoto");
+    // Opcional: limpiar también los ítems de carrito o configuración si existen
+    // localStorage.removeItem("cart"); 
+    
+    // Redirigir a la página principal y recargar para resetear el estado
+    navigate("/");
+    window.location.reload(); 
 };
 
 return (
@@ -65,7 +93,7 @@ return (
                 <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 dark:text-slate-300" />
                 <input
                     type="text"
-                    placeholder="Buscar productos, marcas o categorías..."
+                    placeholder="Buscar productos..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     // 🟢 Agregamos el handler de la tecla Enter
@@ -105,20 +133,20 @@ return (
 
             {/*  CLIENTE: VENDER (Colores originales) */}
             {role === "Cliente" && (
-               <button
+                <button
                 onClick={() => {
-                  if (!token) {
-                    setLoginForSelling(true);
-                    setOpenModal(true);
-                  } else {
-                    navigate("/vender");
-                  }
+                    if (!token) {
+                        setLoginForSelling(true);
+                        setOpenModal(true);
+                    } else {
+                        navigate("/vender");
+                    }
                 }}
                 className="hidden sm:flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-accent px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:scale-105"
-            >
-                <Plus className="h-5 w-5" />
-                Vender
-            </button>
+                >
+                    <Plus className="h-5 w-5" />
+                    Vender
+                </button>
 
             )}
 
@@ -181,7 +209,7 @@ return (
                         }
                         else{
                             // Usamos console.log() en lugar de alert() para evitar el bloqueo del iframe
-                            console.log(`Bienvenido ${role.toUpperCase()}`); 
+                            showToast("Inicio de sesión exitoso");
                         }
 
                         // reset para evitar redirecciones futuras
@@ -193,29 +221,29 @@ return (
             )}
 
             {/* LOGUEADO: MENÚ DE USUARIO */}
-            {/* ✅ MENÚ SOLO PARA CLIENTE */}
+            {/* ✅ MENÚ SOLO PARA CLIENTE - AHORA CON DATOS DINÁMICOS */}
             {token && role === "Cliente" && (
                 <UserDropdownMenu
-                    userName="Usuario"
-                    userAvatar="https://i.pravatar.cc/150?img=4"
-                    onLogout={() => {
-                        localStorage.clear();
-                        window.location.reload();
-                    }}
+                    // 🔧 Datos dinámicos
+                    userName={userName || "Cliente"}
+                    userAvatar={safeUserPhoto}
+
+                    userId={userId} // El ID se pasa para enlaces de perfil
+                    // 🔧 La función de logout usa la nueva función handleLogout
+                    onLogout={handleLogout}
                 />
             )}
-            {token && (
+            
+            {/* LOGUEADO: BOTÓN CERRAR SESIÓN (Para Administrador y Cliente) */}
+            {token && role !== "Cliente" && ( // Mostrar Cerrar Sesión si hay token, pero solo si NO es Cliente (el cliente lo tiene en el dropdown)
                 <button
-                    onClick={() => {
-                        localStorage.removeItem("token");
-                        localStorage.removeItem("role");
-                        navigate("/");
-                    }}
+                    onClick={handleLogout}
                     className="flex items-center gap-2 rounded-full border border-red-300 bg-white px-6 py-2.5 text-sm font-semibold text-red-600 shadow-sm hover:bg-red-50 hover:shadow transition-all active:scale-95 dark:border-red-600 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-slate-700"
                 >
                     Cerrar Sesión
                 </button>
             )}
+
 
             {/*  Toggle Dark Mode */}
             <button

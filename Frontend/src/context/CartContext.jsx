@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
+import { showToast } from "../components/toast";
 // Importamos useEffect para la persistencia de datos.
 
 // Nombre de la clave para guardar en localStorage
@@ -69,7 +70,7 @@ export const CartProvider = ({ children }) => {
             }
         });
         
-        window.alert(`Se ha añadido "${product.name}" al carrito.`);
+        showToast(`Se agregó ${product.name} al carrito.`);
     };
 
     /**

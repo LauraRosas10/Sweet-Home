@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { ChevronDown } from "lucide-react";
+import { showToast } from "../toast.js";
 
 export default function ProductFormAdaptado({ editingId = null, productData = null }) {
   const userId = localStorage.getItem("userId");
@@ -102,10 +103,10 @@ export default function ProductFormAdaptado({ editingId = null, productData = nu
           { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
         );
 
-        alert("Producto actualizado ✔️");
+        showToast("Producto actualizado");
       } else {
         if (!formData.Imagen) {
-          alert("Debes subir una imagen para crear el producto.");
+          showToast("Debes subir una imagen para crear el producto.");
           return;
         }
 
@@ -115,7 +116,7 @@ export default function ProductFormAdaptado({ editingId = null, productData = nu
           { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
         );
 
-        alert("Producto creado ✔️");
+        showToast("Producto creado");
         setFormData({
             Nombre: "",
             Descripcion: "",
@@ -131,7 +132,7 @@ export default function ProductFormAdaptado({ editingId = null, productData = nu
       }
     } catch (err) {
       console.error(err);
-      alert("Error al guardar el producto");
+      showToast("Error al guardar el producto");
     }
   };
 
