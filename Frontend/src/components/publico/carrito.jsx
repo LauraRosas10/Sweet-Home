@@ -4,7 +4,9 @@ import { useNavigate } from "react-router-dom"
 import { ModalInicio } from "../login/inicio"
 
 
+
 import { useCart } from "../../context/CartContext"
+import { showToast } from "../toast"
 
 export default function CartPage() {
 const navigate = useNavigate()
@@ -36,7 +38,9 @@ const applyPromoCode = () => {
 const [openModal, setOpenModal] = useState(false);
 
 return (
+    
     <div className="relative flex min-h-screen w-full flex-col bg-gradient-to-br from-gray-50 to-gray-100 dark:from-[#0a0e1a] dark:to-[#101622] text-gray-900 dark:text-gray-100">
+
     <header className="sticky top-0 z-0 flex h-16 items-center border-b border-gray-200/50 dark:border-gray-700/50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md px-6 shadow-sm">
         <button
         onClick={() => window.history.back()}
@@ -173,7 +177,7 @@ return (
     const token = localStorage.getItem("token");
 
     if (!token) {
-      setOpenModal(true); // ✅ abrir modal
+      showToast("Debes iniciar sesión para continuar con la compra."); // ✅ abrir modal
       return;             // ✅ detener navegación
     }
 
@@ -185,25 +189,7 @@ return (
   <span className="material-symbols-outlined">arrow_forward</span>
 </button>
 
-<ModalInicio 
-  open={openModal} 
-  onOpenChange={setOpenModal}
-  onLoginSuccess={(role) => {
-    // ✅ Guardar login y cerrar modal
-    setOpenModal(false);
 
-    // ✅ Si el usuario inicia sesión como cliente,
-    // se mantiene en la página y puede continuar la compra
-    if (role === "cliente") {
-      navigate("/metodo-pago");
-    }
-
-    // ✅ Si es admin, redirigir al inicio
-    if (role === "administrador") {
-      navigate("/");
-    }
-  }}
-/>
 
 
 
@@ -218,6 +204,7 @@ return (
         </div>
         )}
     </main>
+
 
     {/* Material Symbols Font */}
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
