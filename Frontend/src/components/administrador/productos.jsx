@@ -69,13 +69,13 @@ export default function ProductList({ products, onEdit, onToggleStatus, onDelete
                                 {/* Detalles (se mantienen) */}
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                                     <div>
-                                        {/* <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">
+                                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">
                                             Categoría
                                         </p>
                                         <span className="inline-block px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-sm font-medium">
-                                            {/* 🛑 CAMBIO REALIZADO AQUÍ: Se cambió 'product.category' por 'product.Categoria' 
-                                            {product.Categoria || "Otros"} 
-                                        </span> */}
+                                            {/* 🛑 CAMBIO REALIZADO AQUÍ: Se cambió 'product.category' por 'product.Categoria' */}
+                                            {product.Categoria?.Nombre || "Otros"} 
+                                        </span>
                                     </div>
                                     <div>
                                         <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">

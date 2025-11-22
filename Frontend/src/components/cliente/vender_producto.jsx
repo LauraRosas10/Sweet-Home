@@ -1,251 +1,278 @@
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { ChevronDown } from "lucide-react";
 
+export default function ProductFormAdaptado({ editingId = null, productData = null }) {
+  const userId = localStorage.getItem("userId");
 
-import { useState } from "react"
-import { ChevronDown } from "lucide-react"
+  const [categorias, setCategorias] = useState([]);
 
-export default function ProductForm() {
-const [formData, setFormData] = useState({
-    productName: "",
-    description: "",
-    category: "Electrónica",
-    status: "Nuevo",
-    stock: "",
-    price: "",
-    image: null,
+  const [formData, setFormData] = useState({
+    Nombre: "",
+    Descripcion: "",
+    Categoria: "",
+    Estado: "Disponible",
+    Stock: "",
+    Precio: "",
+    Imagen: "",
     imagePreview: null,
-})
+    UsuarioCreador: userId || "",
+  });
 
-const handleInputChange = (e) => {
-    const { name, value } = e.target
+  // 🟦 PRE-CARGAR PRODUCTO SI ESTAMOS EDITANDO
+  useEffect(() => {
+    if (productData) {
+      setFormData({
+        Nombre: productData.Nombre,
+        Descripcion: productData.Descripcion,
+        Categoria: productData.Categoria,
+        Estado: productData.Estado,
+        Stock: productData.Stock,
+        Precio: productData.Precio,
+        Imagen: productData.Imagen || "",
+        imagePreview: productData.Imagen || null,
+        UsuarioCreador: productData.UsuarioCreador || userId,
+      });
+    }
+  }, [productData]);
+
+  // 🟦 CARGAR CATEGORÍAS
+  useEffect(() => {
+    const loadCategorias = async () => {
+      try {
+        const res = await axios.get("http://localhost:5100/api/categorias");
+        setCategorias(res.data);
+      } catch (err) {
+        console.error("Error cargando categorías", err);
+      }
+    };
+    loadCategorias();
+  }, []);
+
+  // 🟦 HANDLE INPUTS
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
     setFormData((prev) => ({
-    ...prev,
-    [name]: value,
-    }))
-}
+      ...prev,
+      [name]: value,
+    }));
+  };
 
-const handleImageChange = (e) => {
-    const file = e.target.files?.[0]
-    if (file) {
-    const reader = new FileReader()
+  // 🟦 IMAGEN -> BASE64
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
     reader.onloadend = () => {
-        setFormData((prev) => ({
+      setFormData((prev) => ({
         ...prev,
-        image: file,
+        Imagen: reader.result,
         imagePreview: reader.result,
-        }))
-    }
-    reader.readAsDataURL(file)
-    }
-}
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
 
-const handleSubmit = (e) => {
-    e.preventDefault()
-    console.log("Formulario enviado:", formData)
-}
+  // 🟦 GUARDAR PRODUCTO (POST / PUT)
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-const handleGoBack = () => {
-    console.log("Volver atrás")
-    window.history.back()
-}
+    const payload = {
+      Nombre: formData.Nombre,
+      Descripcion: formData.Descripcion,
+      Categoria: formData.Categoria,
+      Precio: Number(formData.Precio),
+      Stock: Number(formData.Stock),
+      Estado: formData.Estado,
+      UsuarioCreador: formData.UsuarioCreador,
+    };
+
+    // Si hay una imagen nueva, agregarla
+    if (formData.Imagen?.startsWith("data:")) {
+      payload.Imagen = formData.Imagen;
+    }
+
+    try {
+      if (editingId) {
+        await axios.put(
+          `http://localhost:5100/api/productos/${editingId}`,
+          payload,
+          { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+        );
+
+        alert("Producto actualizado ✔️");
+      } else {
+        if (!formData.Imagen) {
+          alert("Debes subir una imagen para crear el producto.");
+          return;
+        }
+
+        await axios.post(
+          "http://localhost:5100/api/productos",
+          payload,
+          { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+        );
+
+        alert("Producto creado ✔️");
+        setFormData({
+            Nombre: "",
+            Descripcion: "",
+            Categoria: "",
+            Estado: "Disponible",
+            Stock: "",
+            Precio: "",
+            Imagen: "",
+            imagePreview: null,
+            UsuarioCreador: userId, // NO lo borres
+            });
+
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error al guardar el producto");
+    }
+  };
+
+  const handleGoBack = () => window.history.back();
 
 return (
-    <div className="relative flex h-auto min-h-screen w-full flex-col bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-200">
-    {/* Top App Bar */}
-    <div className="sticky top-0 z-10 flex h-16 items-center bg-white dark:bg-slate-800 px-4 justify-between border-b border-slate-200 dark:border-slate-700 shadow-sm">
-        <button
-        onClick={handleGoBack}
-        className="flex size-10 shrink-0 items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
-        aria-label="Volver atrás"
-        >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-        </button>
-        <h2 className="text-lg font-bold flex-1 text-center">Publicar Producto</h2>
-        <div className="w-10"></div>
-    </div>
+    <div className="w-full flex justify-center bg-slate-100 dark:bg-slate-900 py-6">
 
-    {/* Main Content */}
-    <main className="flex-1 p-4 max-w-2xl mx-auto w-full">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-        {/* Image Uploader */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-600 p-8 shadow-sm hover:shadow-md transition-shadow">
+      {/* CARD CENTRAL */}
+      <div className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-5 border border-slate-200 dark:border-slate-700">
+
+        {/* Título */}
+        <h2 className="text-xl font-bold text-center mb-4">
+          {editingId ? "Editar Producto" : "Publicar Producto"}
+        </h2>
+
+        {/* FORMULARIO COMPACTO */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+
+          {/* Imagen */}
+          <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-4 text-center">
+
             {formData.imagePreview ? (
-            <div className="flex flex-col items-center gap-4">
+              <div className="flex flex-col items-center gap-2">
                 <img
-                src={formData.imagePreview || "/placeholder.svg"}
-                alt="Preview"
-                className="w-full max-w-xs h-48 object-cover rounded-lg"
+                  src={formData.imagePreview}
+                  className="w-40 h-40 object-cover rounded-lg"
                 />
-                <label className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors">
-                <span className="truncate">Cambiar Imagen</span>
-                <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                    aria-label="Cambiar imagen"
-                />
+
+                <label className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">
+                  Cambiar Imagen
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                 </label>
-            </div>
+
+                <button
+                  type="button"
+                  onClick={() => setFormData((p) => ({ ...p, Imagen: "", imagePreview: null }))}
+                  className="text-red-500 text-sm"
+                >
+                  Quitar Imagen
+                </button>
+              </div>
             ) : (
-            <div className="flex flex-col items-center gap-4">
-                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                <svg
-                    className="w-8 h-8 text-blue-600 dark:text-blue-300"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
+              <label className="cursor-pointer flex flex-col items-center gap-2">
+                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                  +
                 </div>
-                <div className="text-center">
-                <p className="text-lg font-semibold mb-1">Añadir Imagen del Producto</p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Sube una imagen clara y atractiva de tu producto
-                </p>
-                </div>
-                <label className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors">
-                <span className="truncate">Seleccionar Imagen</span>
-                <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                    aria-label="Seleccionar imagen"
-                />
-                </label>
-            </div>
+                <p className="text-sm font-semibold">Subir Imagen</p>
+                <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+              </label>
             )}
-        </div>
+          </div>
 
-        {/* Product Name */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm">
-            <label className="flex flex-col w-full">
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 pb-2 mb-2">Nombre del Producto</p>
+          {/* Nombre */}
+          <div>
+            <p className="text-sm font-semibold mb-1">Nombre</p>
             <input
-                type="text"
-                name="productName"
-                value={formData.productName}
-                onChange={handleInputChange}
-                placeholder="Ej: Camiseta de algodón premium"
-                maxLength="100"
-                className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg focus:outline-0 focus:ring-2 focus:ring-blue-500 border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 h-12 placeholder:text-slate-500 dark:placeholder:text-slate-400 px-3 py-2 text-base font-normal"
+              type="text"
+              name="Nombre"
+              value={formData.Nombre}
+              onChange={handleInputChange}
+              className="w-full h-10 rounded-lg px-3 border dark:border-slate-600 bg-slate-50 dark:bg-slate-900"
             />
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                {formData.productName.length}/100 caracteres
-            </p>
-            </label>
-        </div>
+          </div>
 
-        {/* Description */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm">
-            <label className="flex flex-col w-full">
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 pb-2 mb-2">Descripción</p>
+          {/* Descripción */}
+          <div>
+            <p className="text-sm font-semibold mb-1">Descripción</p>
             <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                placeholder="Describe los detalles, características y condición del producto..."
-                maxLength="500"
-                className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg focus:outline-0 focus:ring-2 focus:ring-blue-500 border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 min-h-32 placeholder:text-slate-500 dark:placeholder:text-slate-400 px-3 py-2 text-base font-normal"
+              name="Descripcion"
+              value={formData.Descripcion}
+              onChange={handleInputChange}
+              className="w-full rounded-lg px-3 py-2 h-24 border dark:border-slate-600 bg-slate-50 dark:bg-slate-900"
             />
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                {formData.description.length}/500 caracteres
-            </p>
-            </label>
-        </div>
+          </div>
 
-        {/* Category & Status */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm">
-            <label className="flex flex-col min-w-40 flex-1 relative">
-                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 pb-2 mb-2">Categoría</p>
-                <select
-                name="category"
-                value={formData.category}
-                onChange={handleInputChange}
-                className="appearance-none w-full rounded-lg focus:outline-0 focus:ring-2 focus:ring-blue-500 border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 h-12 px-3 py-2 text-base font-normal pr-10"
-                >
-                <option>Electrónica</option>
-                <option>Ropa</option>
-                <option>Hogar</option>
-                <option>Jardín</option>
-                <option>Juguetes</option>
-                <option>Deportes</option>
-                <option>Libros</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 translate-y-1 w-5 h-5 text-slate-500 pointer-events-none" />
-            </label>
-            </div>
+          {/* Categoría */}
+          <div>
+            <p className="text-sm font-semibold mb-1">Categoría</p>
+            <select
+              name="Categoria"
+              value={formData.Categoria}
+              onChange={handleInputChange}
+              className="w-full h-10 rounded-lg px-3 border dark:border-slate-600 bg-slate-50 dark:bg-slate-900"
+            >
+              <option value="">Seleccionar...</option>
+              {categorias.map((c) => (
+                <option key={c._id} value={c._id}>{c.Nombre}</option>
+              ))}
+            </select>
+          </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm">
-            <label className="flex flex-col min-w-40 flex-1 relative">
-                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 pb-2 mb-2">Estado</p>
-                <select
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-                className="appearance-none w-full rounded-lg focus:outline-0 focus:ring-2 focus:ring-blue-500 border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 h-12 px-3 py-2 text-base font-normal pr-10"
-                >
-                <option>Nuevo</option>
-                <option>Usado - Como nuevo</option>
-                <option>Usado - Buen estado</option>
-                <option>Usado - Aceptable</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 translate-y-1 w-5 h-5 text-slate-500 pointer-events-none" />
-            </label>
-            </div>
-        </div>
+          {/* Estado */}
+          <div>
+            <p className="text-sm font-semibold mb-1">Estado</p>
+            <select
+              name="Estado"
+              value={formData.Estado}
+              onChange={handleInputChange}
+              className="w-full h-10 rounded-lg px-3 border dark:border-slate-600 bg-slate-50 dark:bg-slate-900"
+            >
+              <option value="Disponible">Disponible</option>
+              <option value="Agotado">Agotado</option>
+            </select>
+          </div>
 
-        {/* Stock & Price */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm">
-            <label className="flex flex-col min-w-40 flex-1">
-                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 pb-2 mb-2">Stock</p>
-                <input
+          {/* Stock + Precio */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-sm font-semibold mb-1">Stock</p>
+              <input
                 type="number"
-                name="stock"
-                value={formData.stock}
+                name="Stock"
+                value={formData.Stock}
                 onChange={handleInputChange}
-                placeholder="0"
-                min="0"
-                className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg focus:outline-0 focus:ring-2 focus:ring-blue-500 border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 h-12 placeholder:text-slate-500 dark:placeholder:text-slate-400 px-3 py-2 text-base font-normal"
-                />
-            </label>
+                className="w-full h-10 rounded-lg px-3 border dark:border-slate-600 bg-slate-50 dark:bg-slate-900"
+              />
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm">
-            <label className="flex flex-col min-w-40 flex-1">
-                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 pb-2 mb-2">Precio ($)</p>
-                <input
+            <div>
+              <p className="text-sm font-semibold mb-1">Precio ($)</p>
+              <input
                 type="number"
-                name="price"
-                value={formData.price}
+                name="Precio"
+                value={formData.Precio}
                 onChange={handleInputChange}
-                placeholder="0.00"
-                step="0.01"
-                min="0"
-                className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg focus:outline-0 focus:ring-2 focus:ring-blue-500 border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 h-12 placeholder:text-slate-500 dark:placeholder:text-slate-400 px-3 py-2 text-base font-normal"
-                />
-            </label>
+                className="w-full h-10 rounded-lg px-3 border dark:border-slate-600 bg-slate-50 dark:bg-slate-900"
+              />
             </div>
-        </div>
+          </div>
+
+          {/* Botón */}
+          <button
+            type="submit"
+            className="w-full h-12 mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md"
+          >
+            {editingId ? "Actualizar" : "Publicar Producto"}
+          </button>
+
         </form>
-    </main>
-
-    {/* Bottom Action Bar */}
-    <div className="sticky bottom-0 bg-white dark:bg-slate-800 p-4 border-t border-slate-200 dark:border-slate-700 shadow-lg">
-        <div className="max-w-2xl mx-auto w-full">
-        <button
-            onClick={handleSubmit}
-            className="w-full flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-14 px-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-base font-bold transition-all shadow-md hover:shadow-lg"
-        >
-            <span className="truncate">Publicar Producto</span>
-        </button>
-        </div>
+      </div>
     </div>
-    </div>
-)
+  );
 }

@@ -26,15 +26,20 @@ import ProfilePage from "../components/cliente/perfil_edi";
 
 
 
+
+
 const AppRoutes = () => {
 return (
     <Routes>
+   
     <Route element={<Layout />}>
         
         {/*  RUTAS PÚBLICAS */}
         <Route path="/" element={<Home />} />
         <Route path="/producto/:id" element={<ProductDetail />} />
+        
         <Route path="/pagecarrito" element={<CartPage />} />
+        
         <Route path="/login" element={<ModalInicio />} />
         <Route path="/explorar" element={<ProductExplorer />} />
 
@@ -126,6 +131,7 @@ return (
         />
 
         </Route>
+     
 
     </Routes>
 );

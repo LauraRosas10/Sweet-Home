@@ -69,7 +69,7 @@ export default function ProductManagement() {
             image: p.Imagen || "/placeholder.svg", 
             userId: p.UsuarioCreador?._id || p.UsuarioCreador, // ID del usuario
             // Mapeamos el ID a su nombre para la VISUALIZACIÓN
-            Categoria: map[p.Categoria] || "Otros", 
+            Categoria: map[p.Categoria?.Nombre] || "Otros", 
         };
       });
       setProducts(normalizedProducts);

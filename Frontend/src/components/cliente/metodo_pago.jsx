@@ -1,32 +1,15 @@
 
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { createOrder } from "../../api/pedidos.js"
+import { useCart } from "../../context/CartContext.jsx"
+
 
 export default function CheckoutSimulator() {
 const navigate = useNavigate()
-const [cartItems, setCartItems] = useState([
-    {
-    id: 1,
-    name: "Zapatilla Deportiva X-Run",
-    price: 120.0,
-    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop",
-    quantity: 1,
-    },
-    {
-    id: 2,
-    name: "Camiseta Deportiva Performance",
-    price: 45.0,
-    image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&h=200&fit=crop",
-    quantity: 1,
-    },
-    {
-    id: 3,
-    name: "Pantalón Deportivo Flex",
-    price: 85.0,
-    image: "https://images.unsplash.com/photo-1551028719-00167b16ebc5?w=200&h=200&fit=crop",
-    quantity: 1,
-    },
-])
+
+const { cartItems,clearCart } = useCart()
+
 
 const [formData, setFormData] = useState({
     fullName: "",
@@ -110,23 +93,48 @@ const tax = subtotal * 0.09
 const total = subtotal + shippingCost + tax
 const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0)
 
-const handleCompleteOrder = () => {
-    const newErrors = {
+const handleCompleteOrder = async () => {
+  const newErrors = {
     fullName: validateFullName(formData.fullName),
     address: validateAddress(formData.address),
     city: validateCity(formData.city),
     postalCode: validatePostalCode(formData.postalCode),
     phone: validatePhone(formData.phone),
-    }
+  };
 
-    setErrors(newErrors)
+  setErrors(newErrors);
 
-    const hasErrors = Object.values(newErrors).some((error) => error !== "")
+  const hasErrors = Object.values(newErrors).some((error) => error !== "");
 
-    if (!hasErrors && cartItems.length > 0) {
-    setOrderCompleted(true)
-    }
-}
+  if (hasErrors || cartItems.length === 0) return;
+
+  // Construir JSON para el backend
+  console.log("Carrito actual:", cartItems);
+
+  const orderData = {
+    Productos: cartItems.map((item) => ({
+        Producto:item.id,    // <- IMPORTANTE
+      Cantidad: item.quantity // <- IMPORTANTE
+    })),
+    DireccionEntrega: formData.address,
+    Estado: "Pendiente",
+    Activo: true,
+    Total: total.toFixed(2),
+    MetodoPago: "Contraentrega",
+    Usuario: "self" // <- IMPORTANTE: el backend tomará el usuario del token
+  };
+  console.log("Pedido enviado:", orderData);
+
+
+  try {
+    await createOrder(orderData);
+    setOrderCompleted(true);
+  } catch (error) {
+    console.error("Error creando pedido:", error);
+    alert("Hubo un error al procesar el pedido.");
+  }
+};
+
 
 if (orderCompleted) {
     return (
@@ -188,29 +196,8 @@ if (orderCompleted) {
             onClick={() => {
             setOrderCompleted(false)
             setFormData({ fullName: "", address: "", city: "", postalCode: "", phone: "" })
-            setCartItems([
-                {
-                id: 1,
-                name: "Zapatilla Deportiva X-Run",
-                price: 120.0,
-                image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop",
-                quantity: 1,
-                },
-                {
-                id: 2,
-                name: "Camiseta Deportiva Performance",
-                price: 45.0,
-                image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&h=200&fit=crop",
-                quantity: 1,
-                },
-                {
-                id: 3,
-                name: "Pantalón Deportivo Flex",
-                price: 85.0,
-                image: "https://images.unsplash.com/photo-1551028719-00167b16ebc5?w=200&h=200&fit=crop",
-                quantity: 1,
-                },
-            ])
+            clearCart()
+
             }}
             className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
         >
@@ -279,7 +266,7 @@ return (
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleInputChange}
-                    placeholder="Juan Pérez"
+                    placeholder="Laila Ramirez"
                     className={`w-full px-4 py-3 rounded-xl border-2 ${
                     errors.fullName ? "border-red-500 dark:border-red-500" : "border-gray-200 dark:border-gray-700"
                     } bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all`}
@@ -329,7 +316,7 @@ return (
                     name="city"
                     value={formData.city}
                     onChange={handleInputChange}
-                    placeholder="Madrid"
+                    placeholder="Bucaramanga"
                     className={`w-full px-4 py-3 rounded-xl border-2 ${
                     errors.city ? "border-red-500 dark:border-red-500" : "border-gray-200 dark:border-gray-700"
                     } bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all`}
@@ -402,7 +389,7 @@ return (
                 name="phone"
                 value={formData.phone}
                 onChange={handleInputChange}
-                placeholder="+34 612 345 678"
+                placeholder="312 345 6789"
                 className={`w-full px-4 py-3 rounded-xl border-2 ${
                 errors.phone ? "border-red-500 dark:border-red-500" : "border-gray-200 dark:border-gray-700"
                 } bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all`}

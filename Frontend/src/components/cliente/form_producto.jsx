@@ -1,276 +1,453 @@
+import { useState, useEffect } from "react";
+import ProductList from "./productos.jsx";
+import { Package, Plus } from "lucide-react";
+import axios from "axios";
+import { Image as ImageIcon } from "lucide-react";
 
-import { useState } from "react"
-import ProductList from "./productos.jsx"
-import { Package, Plus } from "lucide-react"
 
 export default function ProductManagement() {
-const [products, setProducts] = useState([
-    {
-    id: 1,
-    name: "Camiseta de Algodón Orgánico",
-    description: "Camiseta cómoda y sostenible hecha de algodón 100% orgánico",
-    category: "Ropa",
-    price: 19.99,
-    stock: 50,
-    status: "active",
-    image: "/camiseta-algod-n-blanca.jpg",
-    },
-    {
-    id: 2,
-    name: "Auriculares Inalámbricos Pro",
-    description: "Auriculares premium con cancelación de ruido activa y batería de 30 horas",
-    category: "Electrónica",
-    price: 129.99,
-    stock: 0,
-    status: "active",
-    image: "/auriculares-negros-inal-mbricos.jpg",
-    },
-    {
-    id: 3,
-    name: "Taza de Cerámica Artesanal",
-    description: "Taza hecha a mano con diseño minimalista y acabado brillante",
-    category: "Hogar",
-    price: 24.5,
-    stock: 120,
-    status: "active",
-    image: "/taza-cer-mica-blanca.jpg",
-    },
-])
+  const [products, setProducts] = useState([]);
+  const [categorias, setCategorias] = useState([]);
 
-const [showForm, setShowForm] = useState(false)
-const [editingId, setEditingId] = useState(null)
-const [search, setSearch] = useState("")
-const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    category: "Electrónica",
-    price: "",
-    stock: "",
-    status: "active",
-})
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [search, setSearch] = useState("");
 
-const filteredProducts = products.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
+  // 💠 Nueva: preview de imagen
+  const [imagePreview, setImagePreview] = useState(null);
 
-const handleEdit = (product) => {
-    setFormData(product)
-    setEditingId(product.id)
-    setShowForm(true)
-}
+  const [formData, setFormData] = useState({
+    Nombre: "",
+    Descripcion: "",
+    Categoria: "",
+    Precio: "",
+    Stock: "",
+    Estado: "Disponible",
+    Imagen: "",
+    UsuarioCreador:""
+  });
 
-const handleSave = (e) => {
-    e.preventDefault()
+  const filteredProducts = products.filter(
+    (p) =>
+      typeof p?.Nombre === "string" &&
+      p.Nombre.toLowerCase().includes(search.toLowerCase())
+  );
 
-    if (editingId) {
-    setProducts(products.map((p) => (p.id === editingId ? { ...formData, id: editingId } : p)))
-    } else {
-    const newProduct = {
-        ...formData,
-        id: Date.now(),
-        price: Number.parseFloat(formData.price),
-        stock: Number.parseInt(formData.stock),
-    }
-    setProducts([...products, newProduct])
-    }
+  // 📸 MANEJO DE IMAGEN
+  const handleImage = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    setShowForm(false)
-    setEditingId(null)
-    resetForm()
-}
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData((prev) => ({ ...prev, Imagen: reader.result }));
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
 
-const handleDelete = (id) => {
-    setProducts(products.filter((p) => p.id !== id))
-}
+  useEffect(() => {
+  if (showForm) {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+}, [showForm]);
 
-const handleToggleStatus = (id) => {
-    setProducts(
-    products.map((p) => (p.id === id ? { ...p, status: p.status === "active" ? "inactive" : "active" } : p)),
-    )
-}
 
-const resetForm = () => {
+  // ✏️ EDITAR PRODUCTO
+  const handleEdit = (product) => {
     setFormData({
-    name: "",
-    description: "",
-    category: "Electrónica",
-    price: "",
-    stock: "",
-    status: "active",
-    })
-}
+      Nombre: product.Nombre,
+      Descripcion: product.Descripcion,
+      Categoria: product.Categoria,
+      Precio: product.Precio,
+      Stock: product.Stock,
+      Estado: product.Estado,
+      Imagen: product.Imagen || "",
+      UsuarioCreador: product.UsuarioCreador|| userId
 
-const handleCancel = () => {
-    setShowForm(false)
-    setEditingId(null)
-    resetForm()
-}
+  
 
-return (
+    });
+
+    console.log(product.UsuarioCreador)
+    setImagePreview(product.Imagen || null);
+    setEditingId(product._id);
+    setShowForm(true);
+  };
+
+  const userId = localStorage.getItem("userId");
+
+  // 💾 GUARDAR PRODUCTO
+ const handleSave = async (e) => {
+  e.preventDefault();
+
+  const isNewBase64 = formData.Imagen?.startsWith("data:");
+
+  const dataSend = {
+    Nombre: formData.Nombre,
+    Descripcion: formData.Descripcion,
+    Categoria: formData.Categoria,
+    Precio: Number(formData.Precio),
+    Stock: Number(formData.Stock),
+    Estado: formData.Estado,
+    Imagen: formData.Imagen,
+    UsuarioCreador: formData.UsuarioCreador,
+  };
+
+  try {
+    // --- CREAR PRODUCTO ---
+    if (!editingId) {
+      if (!dataSend.Imagen || !isNewBase64) {
+        alert("Debes seleccionar una imagen para crear el producto.");
+        return;
+      }
+    
+      await axios.post(
+        "http://localhost:5100/api/productos",
+        dataSend,
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+
+      alert("Producto creado correctamente ✔️");
+
+    }
+
+    // --- EDITAR PRODUCTO ---
+    else {
+
+        console.log(userId)
+        const isBase64 = formData.Imagen?.startsWith("data:");
+  const isEmpty = formData.Imagen === "" || formData.Imagen === null;
+
+  if (isBase64) {
+    // Imagen NUEVA -> enviar base64
+    dataSend.Imagen = formData.Imagen;
+  } 
+  else if (isEmpty) {
+    // Usuario presionó "Quitar imagen"
+    dataSend.Imagen = "";
+  } 
+  else {
+    // Imagen existente -> NO tocarla
+    delete dataSend.Imagen;
+  }
+
+
+      await axios.put(
+        `http://localhost:5100/api/productos/${editingId}`,
+        dataSend,
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+
+      alert("Producto actualizado correctamente ✔️");
+    }
+
+    await fetchProducts();
+    handleCancel();
+
+  } catch (err) {
+    console.error("Error guardando:", err);
+    alert("❌ Error al guardar el producto");
+  }
+};
+
+  // 🔄 CAMBIAR ESTADO
+  const handleToggleStatus = async (id) => {
+    const product = products.find((p) => p._id === id);
+    if (!product) return;
+
+    const newEstado = product.Estado === "Disponible" ? "Agotado" : "Disponible";
+
+    try {
+      await axios.put(
+        `http://localhost:5100/api/productos/${id}`,
+        { Estado: newEstado },
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+
+      setProducts(
+        products.map((p) =>
+          p._id === id ? { ...p, Estado: newEstado } : p
+        )
+      );
+
+      alert(`Estado actualizado a: ${newEstado}`);
+
+    } catch (err) {
+      console.error(err);
+      alert("❌ Error al cambiar estado");
+    }
+  };
+
+  // RESET FORMULARIO
+  const resetForm = () => {
+    setFormData({
+      Nombre: "",
+      Descripcion: "",
+      Categoria: "",
+      Precio: "",
+      Stock: "",
+      Estado: "Disponible",
+      Imagen: "",
+    });
+    setImagePreview(null);
+  };
+
+  const handleCancel = () => {
+    setShowForm(false);
+    setEditingId(null);
+    resetForm();
+  };
+
+  // CARGAR PRODUCTOS
+  const fetchProducts = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:5100/api/productos/mis/misproductos",
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+
+      setProducts(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("Error cargando productos:", err);
+      alert("❌ Error al cargar productos");
+      setProducts([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // CARGAR CATEGORÍAS
+  useEffect(() => {
+    const fetchCategorias = async () => {
+      try {
+        const res = await axios.get("http://localhost:5100/api/categorias");
+        setCategorias(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchCategorias();
+  }, []);
+
+  return (
     <div className="dark:bg-slate-900 min-h-screen">
-    <div className="max-w-7xl mx-auto px-6 py-10 dark:text-white dark:bg-slate-900 dark:min-h-screen ">
-    {/* Header con búsqueda y botón crear */}
-    <div className="mb-8 space-y-4">
-        <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="max-w-7xl mx-auto px-6 py-10 dark:text-white">
 
-            <div>
-            <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">Productos</h1>
-            <p className="text-slate-600 dark:text-slate-400">Gestiona todos tus productos</p>
-            </div>
-            
-        </div>
-        <button
-            onClick={() => {
-            setShowForm(true)
-            setEditingId(null)
-            resetForm()
-            }}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-medium hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 active:scale-95"
-        >
-            <Plus className="w-5 h-5" />
-            Crear Producto
-        </button>
-        </div>
+        {/* HEADER */}
+        <div className="mb-8 space-y-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-4xl font-bold">Productos</h1>
 
-        {/* Barra de búsqueda */}
-        <div className="relative">
-        <input
+            <button
+              onClick={() => {
+                setShowForm(true);
+                setEditingId(null);
+                resetForm();
+              }}
+              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg"
+            >
+              <Plus className="w-5 h-5" />
+              Crear Producto
+            </button>
+          </div>
+
+          {/* BUSCADOR */}
+          <input
             type="text"
             placeholder="Buscar productos..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-4 py-3 pl-12 rounded-lg border border-blue-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-300"
-        />
-        <svg
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-500"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-        >
-            <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-        </svg>
+            className="
+              w-full px-4 py-3 rounded-lg
+              bg-blue-50 text-slate-900 border border-blue-200
+              dark:bg-slate-800 dark:text-white dark:border-slate-600
+              focus:outline-none focus:ring-2 focus:ring-blue-500
+            "
+          />
         </div>
-    </div>
 
-    {/* Formulario */}
-    {showForm && (
-        <div className="mb-8 p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-slate-800 dark:to-slate-900 rounded-xl border border-blue-200 dark:border-slate-700 shadow-lg">
-        <h3 className="text-xl font-bold mb-6 text-slate-900 dark:text-white">
-            {editingId ? "Editar Producto" : "Nuevo Producto"}
-        </h3>
+        {/* FORMULARIO */}
+        {showForm && (
+          <div className="mb-8 p-6 bg-[#F0F6FF] dark:bg-slate-800 rounded-xl shadow-lg">
+            <h3 className="text-xl font-bold mb-6">{editingId ? "Editar Producto" : "Nuevo Producto"}</h3>
 
-        <form onSubmit={handleSave} className="space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <label className="flex flex-col">
-                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                Nombre del Producto
-                </span>
-                <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Ej: Camiseta Premium"
-                required
-                className="px-4 py-2.5 rounded-lg border border-blue-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-300"
+            <form onSubmit={handleSave} className="space-y-5">
+
+
+
+
+              {/* CAMPOS */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                <label className="flex flex-col">
+                  <span className="mb-1">Nombre</span>
+                  <input
+                    type="text"
+                    value={formData.Nombre}
+                    onChange={(e) => setFormData({ ...formData, Nombre: e.target.value })}
+                    className="px-3 py-2 rounded-lg bg-[#F0F6FF] dark:bg-slate-800 border"
+                  />
+                </label>
+
+                <label className="flex flex-col">
+                  <span className="mb-1">Categoría</span>
+                  <select
+                    value={formData.Categoria}
+                    onChange={(e) => setFormData({ ...formData, Categoria: e.target.value })}
+                    className="px-3 py-2 rounded-lg bg-[#F0F6FF] dark:bg-slate-800 border"
+                  >
+                    <option value="">Seleccionar...</option>
+                    {categorias.map((c) => (
+                      <option key={c._id} value={c._id}>{c.Nombre}</option>
+                    ))}
+                  </select>
+                </label>
+
+              </div>
+
+              {/* DESCRIPCIÓN */}
+              <label className="flex flex-col">
+                <span className="mb-1">Descripción</span>
+                <textarea
+                  value={formData.Descripcion}
+                  onChange={(e) => setFormData({ ...formData, Descripcion: e.target.value })}
+                  className="px-3 py-2 rounded-lg bg-[#F0F6FF] dark:bg-slate-800 border"
                 />
-            </label>
+              </label>
 
-            <label className="flex flex-col">
-                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Categoría</span>
-                <select
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="px-4 py-2.5 rounded-lg border border-blue-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-300"
-                >
-                <option>Electrónica</option>
-                <option>Ropa</option>
-                <option>Hogar</option>
-                <option>Deportes</option>
-                </select>
-            </label>
-            </div>
+              
+              {/* IMAGEN */}
+{/* IMAGEN DEL PRODUCTO */}
+<div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-start p-6 rounded-xl 
+  border border-blue-200 bg-blue-50/60 dark:bg-slate-800 dark:border-slate-700">
 
-            <label className="flex flex-col">
-            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Descripción</span>
-            <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Describe las características del producto..."
-                rows={3}
-                className="px-4 py-2.5 rounded-lg border border-blue-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-300 resize-none"
-            />
-            </label>
+  {/* Lado izquierdo: botón + texto */}
+  <div className="md:col-span-2 flex flex-col gap-2">
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <label className="flex flex-col">
-                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Precio</span>
-                <input
-                type="number"
-                step="0.01"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                placeholder="0.00"
-                required
-                className="px-4 py-2.5 rounded-lg border border-blue-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-300"
-                />
-            </label>
+    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+      Imagen del Producto
+    </span>
 
-            <label className="flex flex-col">
-                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Stock</span>
-                <input
-                type="number"
-                value={formData.stock}
-                onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                placeholder="0"
-                required
-                className="px-4 py-2.5 rounded-lg border border-blue-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-300"
-                />
-            </label>
+    {/* Botón subir archivo */}
+    <label
+      className="
+        inline-block px-4 py-2 rounded-lg cursor-pointer text-sm font-medium w-max
+        bg-blue-600 text-white hover:bg-blue-700
+        dark:bg-blue-500 dark:hover:bg-blue-400
+      "
+    >
+      Seleccionar archivo
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleImage}
+        className="hidden"
+      />
+    </label>
 
-            <label className="flex flex-col">
-                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Estado</span>
-                <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="px-4 py-2.5 rounded-lg border border-blue-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-300"
-                >
-                <option value="active">Activo</option>
-                <option value="inactive">Inactivo</option>
-                </select>
-            </label>
-            </div>
+    <p className="text-xs text-slate-600 dark:text-slate-400">
+      Sube una imagen (JPEG/PNG).
+    </p>
 
-            <div className="flex gap-3 justify-end pt-4">
-            <button
-                type="button"
-                onClick={handleCancel}
-                className="px-6 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-300"
-            >
-                Cancelar
-            </button>
-            <button
-                type="submit"
-                className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-medium hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 active:scale-95"
-            >
-                {editingId ? "Actualizar" : "Crear"}
-            </button>
-            </div>
-        </form>
-        </div>
+    {/* Botón quitar */}
+    {imagePreview && (
+      <button
+        type="button"
+        onClick={() => {
+          setImagePreview(null);
+          setFormData((p) => ({ ...p, Imagen: "" }));
+        }}
+        className="text-sm text-red-500 hover:text-red-600 w-max 
+          dark:text-red-400 dark:hover:text-red-300"
+      >
+        Quitar imagen
+      </button>
     )}
+  </div>
 
-    {/* Lista de productos */}
-    <ProductList
-        products={filteredProducts}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onToggleStatus={handleToggleStatus}
-    />
+  {/* Lado derecho: preview */}
+  <div className="md:col-span-1 flex justify-center items-center">
+    <div
+      className="
+        w-32 h-32 rounded-xl border border-dashed border-blue-300 
+        dark:border-slate-600 bg-white dark:bg-slate-700
+        flex items-center justify-center overflow-hidden
+      "
+    >
+      {imagePreview ? (
+        <img
+          src={imagePreview}
+          className="max-w-full max-h-full object-contain"
+        />
+      ) : (
+        <ImageIcon className="w-8 h-8 text-blue-400 dark:text-slate-400" />
+      )}
     </div>
+  </div>
+</div>
+
+              {/* PRECIO / STOCK / ESTADO */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+                <label className="flex flex-col">
+                  <span className="mb-1">Precio</span>
+                  <input
+                    type="number"
+                    value={formData.Precio}
+                    onChange={(e) => setFormData({ ...formData, Precio: e.target.value })}
+                    className="px-3 py-2 rounded-lg bg-[#F0F6FF] dark:bg-slate-800 border"
+                  />
+                </label>
+
+                <label className="flex flex-col">
+                  <span className="mb-1">Stock</span>
+                  <input
+                    type="number"
+                    value={formData.Stock}
+                    onChange={(e) => setFormData({ ...formData, Stock: e.target.value })}
+                    className="px-3 py-2 rounded-lg bg-[#F0F6FF] dark:bg-slate-800 border"
+                  />
+                </label>
+
+                <label className="flex flex-col">
+                  <span className="mb-1">Estado</span>
+                  <select
+                    value={formData.Estado}
+                    onChange={(e) => setFormData({ ...formData, Estado: e.target.value })}
+                    className="px-3 py-2 rounded-lg bg-[#F0F6FF] dark:bg-slate-800 border"
+                  >
+                    <option value="Disponible">Disponible</option>
+                    <option value="Agotado">Agotado</option>
+                  </select>
+                </label>
+
+              </div>
+
+              {/* BOTONES */}
+              <div className="flex justify-end gap-3">
+                <button type="button" onClick={handleCancel} className="text-slate-700 dark:text-slate-300">
+                  Cancelar
+                </button>
+
+                <button type="submit" className="bg-blue-600 text-white px-5 py-2 rounded-lg">
+                  {editingId ? "Actualizar" : "Crear"}
+                </button>
+              </div>
+
+            </form>
+          </div>
+        )}
+
+        {/* LISTA */}
+        <ProductList
+          products={filteredProducts}
+          onEdit={handleEdit}
+          onToggleStatus={handleToggleStatus}
+        />
+      </div>
     </div>
-)
+  );
 }

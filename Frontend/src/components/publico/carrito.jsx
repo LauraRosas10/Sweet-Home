@@ -3,30 +3,17 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { ModalInicio } from "../login/inicio"
 
+import { useCart } from "../../context/CartContext"
+
 export default function CartPage() {
 const navigate = useNavigate()
-const [cartItems, setCartItems] = useState([
-    {
-    id: 1,
-    name: "Classic Tee",
-    color: "White",
-    size: "M",
-    price: 25.0,
-    quantity: 1,
-    image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCFheKV4yg5H_9tnwpObggJCPWdipdx-NHYuKviB9vWMkM5PnO1sVneX8x3U8imV8dOutUAu7-clb8DoE5Ws5QWvptTiqSghFpBw7VMYnKfMGz8FoOFjbBFUzNVl2EEasE8Y2Ikq3oaWzmOeBHvtJgOVXuZ6PHbhEWmnsCHBx7IlMeVWRlsKotTNyA9gJeQ3vEd30r4ZyamBFelqnIl_XMGPN6I8UsfrFLyZLuaP8KMiTMEuBrv6D6l-UaFQyzJwHjvGzeo6lpqPs3y",
-    },
-    {
-    id: 2,
-    name: "Slim-Fit Jeans",
-    color: "Dark Wash",
-    size: "32/30",
-    price: 75.0,
-    quantity: 1,
-    image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCA11hHciz_33Do4rfNFrEG1PVE9rbR7myG3CwBuvn72hfgo7q7gvJ7sV00ofFEQCmfHdf9rLfaT6wuG50fzNkeEGwksmEmIvizmaSH7a_V64d4EIWFtMw43KNRZuh33j-zFKuQz1ED9KxGLFrvS_KMv6LJxmq_KAUuIMuzr9a8-h1HBTti_TMdJ9hnn-o6TfJeiKeYhfpAihb5cUM9j1fcu0-gA8WFX7xhRt4FlYnQemmAAIWjx-slPsyokzcQ2rTHptqQ99BSHkR7",
-    },
-])
+const { 
+        cartItems, 
+        subtotal, 
+        updateQuantity, 
+        removeItem,
+        clearCartContext // Renombrar para evitar conflicto
+    } = useCart();
 
 const [promoCode, setPromoCode] = useState("")
 const [isPromoOpen, setIsPromoOpen] = useState(false)
@@ -34,25 +21,11 @@ const [isPromoOpen, setIsPromoOpen] = useState(false)
 const shipping = 5.0
 const taxRate = 0.084
 
-const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+
 const taxes = subtotal * taxRate
-const total = subtotal + shipping + taxes
+const total = subtotal 
 
-const updateQuantity = (id, delta) => {
-    setCartItems((items) =>
-    items.map((item) => (item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item)),
-    )
-}
 
-const removeItem = (id) => {
-    setCartItems((items) => items.filter((item) => item.id !== id))
-}
-
-const clearCart = () => {
-    if (confirm("Are you sure you want to clear your cart?")) {
-    setCartItems([])
-    }
-}
 
 const applyPromoCode = () => {
     // Implementar lógica de código promocional
@@ -63,7 +36,7 @@ const [openModal, setOpenModal] = useState(false);
 
 return (
     <div className="relative flex min-h-screen w-full flex-col bg-gradient-to-br from-gray-50 to-gray-100 dark:from-[#0a0e1a] dark:to-[#101622] text-gray-900 dark:text-gray-100">
-    <header className="sticky top-0 z-10 flex h-16 items-center border-b border-gray-200/50 dark:border-gray-700/50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md px-6 shadow-sm">
+    <header className="sticky top-0 z-0 flex h-16 items-center border-b border-gray-200/50 dark:border-gray-700/50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md px-6 shadow-sm">
         <button
         onClick={() => window.history.back()}
         className="flex items-center justify-center p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200"
@@ -74,7 +47,7 @@ return (
         Shopping Cart
         </h1>
         <button
-        onClick={clearCart}
+        onClick={clearCartContext}
         className="flex items-center justify-center p-2 -mr-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all duration-200 group"
         >
         <span className="material-symbols-outlined text-2xl text-gray-700 dark:text-gray-300 group-hover:text-red-500 dark:group-hover:text-red-400">
@@ -91,7 +64,7 @@ return (
             </div>
             <p className="text-gray-500 dark:text-gray-400 text-xl font-medium">Your cart is empty</p>
             <button
-            onClick={() => window.history.back()}
+            onClick={() => navigate("/explorar")}
             className="mt-6 px-8 py-3 bg-[#256af4] hover:bg-[#1e56d4] text-white font-semibold rounded-xl transition-colors"
             >
             Start Shopping
@@ -173,42 +146,7 @@ return (
             {/* Right Column - Order Summary */}
             <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
-                {/* Promo Code */}
-                <div className="bg-white dark:bg-gray-800/60 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700/50">
-                <button
-                    onClick={() => setIsPromoOpen(!isPromoOpen)}
-                    className="w-full flex cursor-pointer items-center justify-between gap-4 p-5 hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-colors"
-                >
-                    <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[#256af4] dark:text-[#4d8fff]">local_offer</span>
-                    <p className="text-base font-semibold leading-normal text-gray-900 dark:text-white">Promo Code</p>
-                    </div>
-                    <span
-                    className={`material-symbols-outlined text-gray-600 dark:text-gray-400 transition-transform duration-200 ${isPromoOpen ? "rotate-180" : ""}`}
-                    >
-                    expand_more
-                    </span>
-                </button>
-                {isPromoOpen && (
-                    <div className="px-5 pb-5">
-                    <div className="flex gap-2">
-                        <input
-                        className="flex-grow rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-[#256af4] focus:border-transparent text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 px-4 py-2.5 transition-all"
-                        placeholder="Enter code"
-                        type="text"
-                        value={promoCode}
-                        onChange={(e) => setPromoCode(e.target.value)}
-                        />
-                        <button
-                        onClick={applyPromoCode}
-                        className="px-5 py-2.5 bg-[#256af4] hover:bg-[#1e56d4] text-white rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-105"
-                        >
-                        Apply
-                        </button>
-                    </div>
-                    </div>
-                )}
-                </div>
+
 
                 {/* Order Summary */}
                 <div className="bg-white dark:bg-gray-800/60 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700/50">

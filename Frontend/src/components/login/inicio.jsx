@@ -55,6 +55,11 @@ const { token, role } = response.data;
 
 localStorage.setItem("token", token);
 localStorage.setItem("role", role);
+localStorage.setItem("userId", response.data.userId || response.data.user?._id);
+
+
+
+ // Guardar userId también
 
 // PASAR el rol al callback
 if (onLoginSuccess) onLoginSuccess(role);
@@ -120,8 +125,9 @@ const handleSubmit = (e) => {
 if (!open) return null;
 
 return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 py-150">
-    <div className="bg-white dark:bg-gray-900 rounded-lg max-w-md w-full p-6 relative shadow-lg">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 py-70">
+        <div className="bg-white dark:bg-gray-900 rounded-lg max-w-md w-full p-6 relative shadow-lg max-h-[90vh] overflow-y-auto ">
+
         {/* Cerrar */}
         <button
         onClick={() => onOpenChange(false)}
@@ -177,6 +183,7 @@ return (
         </div>
 
         {/* Formulario */}
+        
         <form onSubmit={handleSubmit} className="space-y-4">
         {authMode === "register" && (
             <>
@@ -313,5 +320,6 @@ return (
         </form>
     </div>
     </div>
+ 
 );
 }

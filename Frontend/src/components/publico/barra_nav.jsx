@@ -4,8 +4,7 @@ import { useTheme } from "../thema.jsx";
 import CartModal from "./modal_carrito.jsx";
 import { UserDropdownMenu } from "../cliente/menu_usuario.jsx";
 import { ModalInicio } from "../login/inicio.jsx";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Header() {
 const [searchQuery, setSearchQuery] = useState("");
@@ -14,13 +13,27 @@ const [openCart, setOpenCart] = useState(false);
 const [openModal, setOpenModal] = useState(false);
 const [loginForSelling, setLoginForSelling] = useState(false);
 
-function onLoginSuccess(role) {
-    console.log(role.toUpperCase());
-}
-
 const role = localStorage.getItem("role");
 const token = localStorage.getItem("token");
 const navigate = useNavigate();
+
+// 🟢 NUEVA FUNCIÓN: Maneja la búsqueda al presionar Enter y redirige
+const handleSearchSubmit = (e) => {
+    // Solo actuamos si se presiona la tecla Enter
+    if (e.key === 'Enter' && searchQuery.trim()) {
+        e.preventDefault(); // Previene cualquier comportamiento por defecto
+        
+        // Codificamos el query para que sea seguro en la URL
+        const encodedQuery = encodeURIComponent(searchQuery.trim());
+        
+        // Navegamos a /productos con el parámetro de búsqueda
+        // Usamos replace para que si el usuario ya está en /productos, se actualicen los parámetros
+        navigate(`/explorar?query=${encodedQuery}`);
+
+        // Opcional: limpiar la barra de búsqueda después de la navegación
+        // setSearchQuery('');
+    }
+};
 
 return (
     <header className={isDark ? "dark" : ""}>
@@ -28,7 +41,7 @@ return (
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-22 items-center justify-between gap-4">
             
-            {/*  LOGO */}
+            {/*  LOGO (Colores originales) */}
             <Link to="/">
             <div className="flex items-center gap-2">
             
@@ -41,10 +54,10 @@ return (
             
             </div>
             </Link>
-            {/*  Buscador o Panel Admin */}
+            {/*  Buscador o Panel Admin */}
             <div className="mx-4 flex-1 w-full">
             {role === "Admin" ? (
-                <h2 className="text-xl font-bold text-center text-dark dark:text-white">
+                <h2 className="text-xl font-bold text-center text-slate-900 dark:text-white">
                 PANEL DE ADMINISTRADOR
                 </h2>
             ) : (
@@ -55,16 +68,19 @@ return (
                     placeholder="Buscar productos, marcas o categorías..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    // 🟢 Agregamos el handler de la tecla Enter
+                    onKeyDown={handleSearchSubmit} 
+                    // Colores de focus originales
                     className="w-full rounded-full border border-slate-300 bg-slate-50 py-2.5 pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-primary dark:focus:ring-primary/20"
                 />
                 </div>
             )}
             </div>
 
-            {/*  ACCIONES */}
+            {/*  ACCIONES */}
             <div className="flex items-center gap-2">
 
-            {/*  BOTONES ADMIN */}
+            {/*  BOTONES ADMIN (Colores originales) */}
             {role === "Admin" && (
                 <>
                 <Link to="/usuarios">
@@ -84,31 +100,29 @@ return (
                     Productos
                     </button>
                 </Link>
-
-
                 </>
             )}
 
-            {/*  CLIENTE: VENDER */}
+            {/*  CLIENTE: VENDER (Colores originales) */}
             {role === "Cliente" && (
                <button
-  onClick={() => {
-    if (!token) {
-      setLoginForSelling(true);
-      setOpenModal(true);
-    } else {
-      navigate("/vender");
-    }
-  }}
-  className="hidden sm:flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-accent px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:scale-105"
->
-  <Plus className="h-7 w-7" />
-  Vender
-</button>
+                onClick={() => {
+                  if (!token) {
+                    setLoginForSelling(true);
+                    setOpenModal(true);
+                  } else {
+                    navigate("/vender");
+                  }
+                }}
+                className="hidden sm:flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-accent px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:scale-105"
+            >
+                <Plus className="h-5 w-5" />
+                Vender
+            </button>
 
             )}
 
-            {/* ✅ CLIENTE: CARRITO */}
+            {/* ✅ CLIENTE: CARRITO (Colores de hover originales) */}
             {role !== "Admin" && (
                 <>
                 <button
@@ -123,7 +137,7 @@ return (
             )}
             
 
-            {/*  NO LOGUEADO: BOTÓN LOGIN */}
+            {/*  NO LOGUEADO: BOTÓN LOGIN */}
             {!token && (
                 <>
                 <button
@@ -134,85 +148,85 @@ return (
                     Iniciar Sesión
                 </button>
 
-<button
-    onClick={() => {
-        const token = localStorage.getItem("token");
-        const role = localStorage.getItem("role");
+                {/* Botón Vender para no logueado (Colores originales) */}
+                <button
+                    onClick={() => {
+                        const token = localStorage.getItem("token");
+                        const role = localStorage.getItem("role");
 
-        if (!token) {
-            setOpenModal(true); // ✅ Abrimos el modal
-            return;
-        }
+                        if (!token) {
+                            setOpenModal(true); // ✅ Abrimos el modal
+                            return;
+                        }
 
-        if (role === "Cliente") {
-            navigate("/vender");
-        }
-
-        // opcional: si es admin puedes ignorar o mandar a otra parte
-    }}
-    className="hidden sm:flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-accent px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:scale-105"
->
-    <Plus className="h-7 w-7" />
-    Vender
-</button>
+                        if (role === "Cliente") {
+                            navigate("/vender");
+                        }
+                    }}
+                    className="hidden sm:flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-accent px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:scale-105"
+                >
+                    <Plus className="h-7 w-7" />
+                    Vender
+                </button>
 
 
- <ModalInicio
-    open={openModal}
-    onOpenChange={setOpenModal}
-    onLoginSuccess={(role) => {
-        setOpenModal(false);
+                <ModalInicio
+                    open={openModal}
+                    onOpenChange={setOpenModal}
+                    onLoginSuccess={(role) => {
+                        setOpenModal(false);
 
-        if (role === "Cliente" && loginForSelling) {
-            navigate("/vender");
-        }
-        else{
-            alert(`Bienvenido ${role.toUpperCase()}`);
-        }
+                        if (role === "Cliente" && loginForSelling) {
+                            navigate("/vender");
+                        }
+                        else{
+                            // Usamos console.log() en lugar de alert() para evitar el bloqueo del iframe
+                            console.log(`Bienvenido ${role.toUpperCase()}`); 
+                        }
 
-        // reset para evitar redirecciones futuras
-        setLoginForSelling(false);
-    }}
-/>
+                        // reset para evitar redirecciones futuras
+                        setLoginForSelling(false);
+                    }}
+                />
 
                 </>
             )}
 
             {/* LOGUEADO: MENÚ DE USUARIO */}
-{/* ✅ MENÚ SOLO PARA CLIENTE */}
-{token && role === "Cliente" && (
-    <UserDropdownMenu
-        userName="Usuario"
-        userAvatar="https://i.pravatar.cc/150?img=4"
-        onLogout={() => {
-            localStorage.clear();
-            window.location.reload();
-        }}
-    />
-)}
+            {/* ✅ MENÚ SOLO PARA CLIENTE */}
+            {token && role === "Cliente" && (
+                <UserDropdownMenu
+                    userName="Usuario"
+                    userAvatar="https://i.pravatar.cc/150?img=4"
+                    onLogout={() => {
+                        localStorage.clear();
+                        window.location.reload();
+                    }}
+                />
+            )}
             {token && (
-    <button
-        onClick={() => {
-            localStorage.removeItem("token");
-            localStorage.removeItem("role");
-            navigate("/");
-        }}
-        className="flex items-center gap-2 rounded-full border border-red-300 bg-white px-6 py-2 text-sm font-semibold text-red-600 shadow-sm hover:bg-red-50 hover:shadow transition-all active:scale-95 dark:border-red-600 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-slate-700"
-    >
-        Cerrar Sesión
-    </button>
-)}
+                <button
+                    onClick={() => {
+                        localStorage.removeItem("token");
+                        localStorage.removeItem("role");
+                        navigate("/");
+                    }}
+                    className="flex items-center gap-2 rounded-full border border-red-300 bg-white px-6 py-2.5 text-sm font-semibold text-red-600 shadow-sm hover:bg-red-50 hover:shadow transition-all active:scale-95 dark:border-red-600 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-slate-700"
+                >
+                    Cerrar Sesión
+                </button>
+            )}
 
-            {/*  Toggle Dark Mode */}
+            {/*  Toggle Dark Mode */}
             <button
                 onClick={toggleDark}
-                className="rounded-full p-2.5 bg-white dark:bg-gray-800 shadow hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="rounded-full p-2.5 bg-white dark:bg-gray-800 shadow hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 aria-label="Toggle theme"
             >
                 {isDark ? (
-                <Sun className="h-5 w-5 text-yellow-400" />
+                <Sun className="h-6 w-6 text-yellow-400" />
                 ) : (
-                <Moon className="h-5 w-5 text-gray-900" />
+                <Moon className="h-6 w-6 text-gray-900" />
                 )}
             </button>
 

@@ -12,6 +12,9 @@ import { useParams, useNavigate } from "react-router-dom"
 import { useTheme } from "../thema.jsx"
 import axios from "axios"
 
+
+import { useCart } from "../../context/CartContext.jsx";
+
 // Mapeo de IDs de categorías a nombres legibles (igual que en productos.jsx)
 const categoryMap = {
 "69003e7f7839b0d071d1ca8e": "Electrónica",
@@ -23,10 +26,21 @@ const { id } = useParams()
 const navigate = useNavigate()
 const { isDark } = useTheme()
 
+
+
 const [product, setProduct] = useState(null)
 const [selectedImage, setSelectedImage] = useState(0)
-const [quantity, setQuantity] = useState(1)
+
 const [isFavorite, setIsFavorite] = useState(false)
+const {addToCart, updateQuantity, }= useCart();
+
+  const { cartItems } = useCart();
+
+useEffect(() => {
+  window.scrollTo({ top: 0, behavior: "smooth" })
+}, [id])
+
+
 
 useEffect(() => {
     const fetchProduct = async () => {
@@ -53,7 +67,7 @@ useEffect(() => {
 
 useEffect(() => {
     setSelectedImage(0)
-    setQuantity(1)
+
     setIsFavorite(false)
 }, [product])
 
@@ -65,16 +79,19 @@ if (!product) {
     )
 }
 
-const handleAddToCart = () => {
-    alert(`Añadiste ${quantity} ${product.name} al carrito 🛒`)
-}
+
 
 const handleContactSeller = (method) => {
     alert(`Abriendo contacto por ${method}...`)
 }
 
-const incrementQuantity = () => setQuantity((prev) => Math.min(prev + 1, 10))
-const decrementQuantity = () => setQuantity((prev) => Math.max(prev - 1, 1))
+
+
+  // Obtener el item real del carrito
+  const item = cartItems.find((i) => i.id === product.id);
+
+  // Si no está en el carrito, cantidad = 0
+  const quantity = item ? item.quantity : 0;
 
 return (
     <div className={`${isDark ? "bg-slate-900" : "bg-white"} w-full min-h-screen transition-colors flex flex-col`}>
@@ -128,7 +145,7 @@ return (
         <div className="space-y-6 text-gray-900 dark:text-gray-100">
             <div>
             <div className="flex items-start justify-between mb-3">
-                <h1 className="text-3xl font-bold">{product.name}</h1>
+                <h1 className="text-2xl font-bold">{product.name}</h1>
                 <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
                 <Share2 className="h-5 w-5" />
                 </button>
@@ -138,7 +155,7 @@ return (
 
 {/* Stock solo */}
 <div className="flex items-center gap-2 mb-3">
-<span className="text-2xl font-bold text-gray-600 dark:text-gray-400">
+<span className="text-1xl font-bold text-gray-600 dark:text-gray-400">
     {product.stock > 0 ? `${product.stock} en stock` : "Agotado"}
 </span>
 </div>
@@ -147,7 +164,7 @@ return (
 
             </div>
 
-            <p className="text-4xl font-bold text-blue-600 dark:text-blue-400">
+            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
             €{product.price.toFixed(2)}
             </p>
 
@@ -156,23 +173,40 @@ return (
             </p>
 
             {/* Cantidad */}
-            <div className="flex items-center gap-3">
-            <span className="font-medium">Cantidad:</span>
-            <div className="flex items-center border rounded-lg dark:border-gray-600">
-                <button onClick={decrementQuantity} disabled={quantity <= 1} className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                <Minus className="h-4 w-4" />
-                </button>
-                <span className="w-10 text-center font-medium">{quantity}</span>
-                <button onClick={incrementQuantity} disabled={quantity >= 10} className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                <Plus className="h-4 w-4" />
-                </button>
-            </div>
-            </div>
+    <div className="flex items-center gap-3">
+      <span className="font-medium">Cantidad:</span>
+
+      <div className="flex items-center gap-2 text-foreground">
+        <button
+          onClick={() => updateQuantity(product.id, -1)}
+          disabled={quantity <= 1 || product.stock === 0}
+          className="flex size-7 cursor-pointer items-center justify-center rounded-full bg-muted text-base font-medium leading-normal transition-colors hover:bg-muted/80 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Decrease quantity"
+        >
+          <Minus className="size-4" />
+        </button>
+
+        <span className="w-6 text-center text-base font-medium leading-normal">
+          {quantity}
+        </span>
+
+        <button
+          onClick={() => updateQuantity(product.id, +1)}
+          disabled={quantity >= product.stock || product.stock === 0}
+          className="flex size-7 cursor-pointer items-center justify-center rounded-full bg-muted text-base font-medium leading-normal transition-colors hover:bg-muted/80 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Increase quantity"
+        >
+          <Plus className="size-4" />
+        </button>
+      </div>
+    </div>
+
 
             {/* Botón añadir al carrito */}
             <div className="flex flex-col sm:flex-row gap-3 mt-4">
             <button
-                onClick={handleAddToCart}
+                onClick={() => { addToCart(product) }}
+
                 className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold py-3 rounded-lg transition-colors"
                 disabled={product.stock === 0}
             >
