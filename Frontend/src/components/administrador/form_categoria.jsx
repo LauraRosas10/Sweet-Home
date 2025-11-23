@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import api from "../../api/axiosConfig.js"
 import CategoryList from "./categorias"
+import { showToast } from "../toast.js"
 
 export default function CategoryManagement() {
   const [categories, setCategories] = useState([])
@@ -31,7 +32,7 @@ export default function CategoryManagement() {
     } catch (error) {
       console.log("❌ Error cargando categorías", error)
       if (error.response?.status === 401) {
-        alert("Tu sesión expiró. Vuelve a iniciar sesión.")
+        showToast("Tu sesión expiró. Vuelve a iniciar sesión.")
       }
     }
   }
@@ -41,7 +42,7 @@ export default function CategoryManagement() {
     e.preventDefault()
 
     if (!formData.name.trim() || !formData.description.trim()) {
-      alert("Nombre y descripción son obligatorios")
+      showToast("Nombre y descripción son obligatorios")
       return
     }
 
@@ -52,7 +53,7 @@ export default function CategoryManagement() {
           Nombre: formData.name,
           Descripcion: formData.description,
         })
-        alert("✅ Categoría actualizada correctamente")
+        showToast("✅ Categoría actualizada correctamente")
       } else {
         // ✅ Crear nueva
         await api.post("/categorias", {
@@ -60,7 +61,7 @@ export default function CategoryManagement() {
           Descripcion: formData.description,
           Activo: formData.status,
         })
-        alert("✅ Categoría creada exitosamente")
+        showToast("✅ Categoría creada exitosamente")
       }
 
       fetchCategories()
@@ -68,9 +69,9 @@ export default function CategoryManagement() {
     } catch (error) {
       console.log("❌ Error guardando categoría", error)
       if (error.response?.status === 401) {
-        alert("No autorizado, inicia sesión nuevamente")
+        showToast("No autorizado, inicia sesión nuevamente")
       } else {
-        alert("❌ Error al guardar la categoría")
+        showToast("❌ Error al guardar la categoría")
       }
     }
   }
@@ -93,9 +94,9 @@ const handleToggleStatus = async (id) => {
   } catch (error) {
     console.log("❌ Error cambiando estado", error);
     if (error.response?.status === 401) {
-      alert("No autorizado, inicia sesión nuevamente")
+      showToast("No autorizado, inicia sesión nuevamente")
     } else {
-      alert("❌ No se pudo cambiar el estado de la categoría")
+      showToast("❌ No se pudo cambiar el estado de la categoría")
     }
   }
 }

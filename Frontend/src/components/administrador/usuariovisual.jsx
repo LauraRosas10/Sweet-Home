@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import api from "../../api/axiosConfig"
 import UserList from "./usuarios"
 import UserForm from "./form_usuario"
+import { showToast } from "../toast.js"
 
 export default function UserManagement() {
   const [users, setUsers] = useState([])
@@ -21,7 +22,7 @@ export default function UserManagement() {
       setUsers(response.data)
     } catch (error) {
       console.error("Error fetching users:", error)
-      alert("Error al cargar los usuarios")
+      showToast("Error al cargar los usuarios")
     }
   }
 
@@ -41,10 +42,10 @@ export default function UserManagement() {
     try {
       await api.delete(`/usuarios/${id}`)
       setUsers(users.filter(u => u._id !== id))
-      alert("Usuario eliminado correctamente")
+      showToast("Usuario eliminado correctamente")
     } catch (error) {
       console.error("Error deleting user:", error)
-      alert("Error al eliminar el usuario")
+      showToast("Error al eliminar el usuario")
     }
   }
 
@@ -55,18 +56,18 @@ export default function UserManagement() {
         const response = await api.put(`/usuarios/${editingUser._id}`, data)
         const updatedUser = response.data.data;
         setUsers(users.map(user => (user._id === editingUser._id ? updatedUser : user)))
-        alert("Usuario actualizado correctamente")
+        showToast("Usuario actualizado correctamente")
       } else {
         // Crear nuevo usuario
         const response = await api.post("/usuarios/register", data)
         setUsers([...users, response.data])
-        alert("Usuario creado correctamente")
+        showToast("Usuario creado correctamente")
       }
       setShowForm(false)
       setEditingUser(null)
     } catch (error) {
       console.error("Error saving user:", error)
-      alert("Error al guardar el usuario")
+      showToast("Error al guardar el usuario")
     }
   }
 
