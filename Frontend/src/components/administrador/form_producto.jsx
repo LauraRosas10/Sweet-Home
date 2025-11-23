@@ -39,6 +39,8 @@ export default function ProductManagement() {
   const [search, setSearch] = useState("");
   const [imagePreview, setImagePreview] = useState("");
 
+  // ⭐ SE ELIMINÓ 'imageFile' porque estamos volviendo a usar Base64 en 'formData.image'
+
 
   const [formData, setFormData] = useState({
     name: "",
@@ -47,7 +49,7 @@ export default function ProductManagement() {
     price: "",
     stock: "",
     status: "active",
-    image: "", 
+    image: "", // Esta ahora almacena la URL o el Base64
     userId: "", 
   });
 
@@ -59,17 +61,13 @@ export default function ProductManagement() {
    * @param {object} currentMap - El mapa de categorías para evitar problemas de sincronización inicial.
    */
   const fetchProducts = useCallback(async (currentMap) => {
-    // Usa el mapa pasado o el estado. Incluye categoryMap y users en las dependencias para evitar warnings,
-    // aunque el map inicial lo pasemos como argumento.
+    // Usa el mapa pasado o el estado.
     const map = currentMap || categoryMap; 
 
     try {
       const res = await axios.get(API_URL);
 
       const normalizedProducts = res.data.map((p) => {
-        // Necesitamos tener acceso a los usuarios aquí, pero para la visualización del nombre
-        // es mejor hacerlo en el ProductList o con un mapa separado de usuarios si fuera necesario.
-        // Mantenemos la lógica de ID para el form.
         return {
             id: p._id,
             name: p.Nombre,
@@ -84,7 +82,7 @@ export default function ProductManagement() {
             userId: p.UsuarioCreador?._id || p.UsuarioCreador, 
             // Mapeamos el ID a su nombre para la VISUALIZACIÓN
             Categoria: map[p.Categoria?._id || p.Categoria] || "Otros", 
-            Cat:p.Categoria?.Nombre || "Otros"
+            Cat:p.Categoria?.Nombre || "Otros"
         };
       });
       setProducts(normalizedProducts);
@@ -98,11 +96,9 @@ export default function ProductManagement() {
   useEffect(() => {
     const fetchInitialData = async () => {
       let map = {};
-      let initialCategoryId = "";
-      let initialUserId = "";
-      let usersData = []; 
       let activeCategories = [];
-
+      let usersData = []; 
+      
       // 1. CARGAR CATEGORÍAS
       try {
         const resCat = await axios.get(API_CATEGORIAS_URL);
@@ -120,22 +116,16 @@ export default function ProductManagement() {
         console.error("Error cargando usuarios:", e.response?.data?.error || e.message);
       }
 
-      // 3. Establecer estados de datos SOLO UNA VEZ
+      // 3. Establecer estados de datos
       setCategories(activeCategories);
       setCategoryMap(map);
       setUsers(usersData);
 
-
       // 4. Establecer valores por defecto para el formulario (Creación)
-      // Esto es crucial: Solo actualizamos el formData si aún tiene los valores iniciales vacíos
-      // Aseguramos que solo se inicialice si hay datos.
-      
-      initialCategoryId = activeCategories[0]?._id || "";
-      initialUserId = usersData[0]?._id || "";
+      const initialCategoryId = activeCategories[0]?._id || "";
+      const initialUserId = usersData[0]?._id || "";
 
-      // 🟢 CORRECCIÓN CLAVE: Usamos un estado de función para evitar sobreescritura si ya hay datos
       setFormData(prev => {
-        // Si no estamos editando (prev.categoryId está vacío), establecemos el primer valor.
         const catId = prev.categoryId || initialCategoryId;
         const usrId = prev.userId || initialUserId;
         return {
@@ -145,14 +135,13 @@ export default function ProductManagement() {
         };
       });
 
-
-      // 5. CARGAR PRODUCTOS (Usando el mapa recién creado)
+      // 5. CARGAR PRODUCTOS
       await fetchProducts(map);
     };
 
     fetchInitialData();
 
-  }, [fetchProducts]); // Dependencia fetchProducts OK
+  }, [fetchProducts]); 
 
 
 // --- MANEJO DE ESTADOS Y EVENTOS (CALLBACKS) ---
@@ -163,7 +152,7 @@ export default function ProductManagement() {
   );
 
 
-  // 🆕 Función genérica para manejar inputs y la subida de archivos
+  // 🆕 Función genérica para manejar inputs y la subida de archivos (Base64)
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
@@ -172,12 +161,12 @@ export default function ProductManagement() {
       const reader = new FileReader();
 
       reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, image: reader.result }));
+        // Usamos Base64 para la previsualización local y para el envío (como Base64)
+        setFormData(prev => ({ ...prev, image: reader.result })); 
         setImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
     } else {
-      // ✅ Se corrigió en la versión anterior: solo actualiza el campo
       setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
@@ -185,8 +174,7 @@ export default function ProductManagement() {
 
   // 🔄 Lógica de Edición: Sincroniza el formulario con el producto a editar.
   const handleEdit = (product) => {
-    // ✅ MEJORA: Aseguramos que el ID del producto que se edita esté en las opciones.
-    // Si no está (ej: la categoría/usuario fue eliminado), por defecto se selecciona el primer elemento.
+    // ... (Lógica de validación de IDs)
     const validCategoryId = categories.find(c => c._id === product.categoryId) 
       ? product.categoryId 
       : categories[0]?._id || "";
@@ -198,14 +186,16 @@ export default function ProductManagement() {
     setFormData({
       name: product.name,
       description: product.description,
-      categoryId: validCategoryId, // Usa el valor validado
+      categoryId: validCategoryId,
       price: product.price,
       stock: product.stock,
       status: product.status,
-      image: product.image,
-      userId: validUserId, // Usa el valor validado
+      image: product.image, // URL existente
+      userId: validUserId,
     });
+    // La imagen previa muestra la URL existente o el Base64 (si se subió uno)
     setImagePreview(product.image);
+
     setEditingId(product.id);
     setShowForm(true);
   };
@@ -216,7 +206,6 @@ export default function ProductManagement() {
     setFormData({
       name: "",
       description: "",
-      // Asegura que se selecciona la primera categoría/usuario por defecto.
       categoryId: categories[0]?._id || "",
       price: "",
       stock: "",
@@ -254,12 +243,12 @@ export default function ProductManagement() {
 
     try {
       await axios.delete(`${API_URL}/${id}`, getAuthConfig());
-      showToast("Producto eliminado correctamente.");
+      showToast("Producto eliminado correctamente.", 'success');
       setProducts(products.filter(p => p.id !== id));
 
     } catch (error) {
       console.error("Error al eliminar producto:", error.response?.data?.error || error.message);
-      showToast(`Error al eliminar el producto: ${error.response?.data?.error || error.message}`);
+      showToast(`Error al eliminar el producto: ${error.response?.data?.error || error.message}`, 'error');
     }
   };
 
@@ -289,11 +278,11 @@ export default function ProductManagement() {
         })
       );
 
-      showToast(`Estado de producto cambiado a ${newBackendStatus}.`);
+      showToast(`Estado de producto cambiado a ${newBackendStatus}.`, 'success');
 
     } catch (error) {
       console.error("Error al cambiar estado:", error.response?.data?.error || error.message);
-      showToast(`Error al cambiar el estado: ${error.response?.data?.error || error.message}`);
+      showToast(`Error al cambiar el estado: ${error.response?.data?.error || error.message}`, 'error');
     }
   };
 
@@ -301,6 +290,9 @@ export default function ProductManagement() {
   // 🟢 Función para guardar (Crear/Actualizar)
   const handleSave = useCallback(async (e) => {
     e.preventDefault();
+    
+    // Muestra el Toast de "Subiendo..." para dar feedback mientras se envía el Base64
+    showToast(`${editingId ? "Actualizando" : "Creando"} producto...`, 'loading'); 
 
     // Determinar si la imagen es un nuevo Base64 (subida de un archivo nuevo)
     const isNewBase64 = formData.image && formData.image.startsWith('data:image/');
@@ -320,27 +312,25 @@ export default function ProductManagement() {
         dataToSend.UsuarioCreador = formData.userId;
     }
 
-    // Lógica de imagen:
-    if (!editingId) {
-      if (!formData.image || !isNewBase64) {
-        showToast("Debes seleccionar una imagen para crear el producto.");
-        return;
-      }
-      dataToSend.Imagen = formData.image;
-    } else if (isNewBase64) {
-      dataToSend.Imagen = formData.image;
-    }
+    // Lógica de imagen: SOLO enviar la imagen si es nueva (Base64) o si estamos creando
+    if (isNewBase64) {
+        dataToSend.Imagen = formData.image;
+    } else if (!editingId && !formData.image) {
+        // Validación básica para creación
+        showToast("Debes seleccionar una imagen para crear el producto.", 'warning');
+        return;
+    }
 
 
     try {
       if (editingId) {
         // Petición PUT (Actualizar)
         await axios.put(`${API_URL}/${editingId}`, dataToSend, getAuthConfig());
-        showToast("Producto actualizado correctamente.");
+        showToast("Producto actualizado correctamente.", 'success');
       } else {
         // Petición POST (Crear)
         await axios.post(API_URL, dataToSend, getAuthConfig());
-        showToast("Producto creado correctamente.");
+        showToast("Producto creado correctamente.", 'success');
       }
 
       await fetchProducts(); // Recargar productos para reflejar el cambio
@@ -350,7 +340,8 @@ export default function ProductManagement() {
 
     } catch (error) {
       console.error("Error al guardar producto:", error.response?.data?.error || error.message);
-      showToast(`Error al guardar el producto: ${error.response?.data?.error || error.message}`);
+      // Reemplaza el toast 'loading' con el toast 'error'
+      showToast(`Error al guardar el producto: ${error.response?.data?.error || error.message}`, 'error');
     }
   }, [editingId, formData.name, formData.description, formData.categoryId, formData.price, formData.stock, formData.status, formData.image, formData.userId, fetchProducts]);
 
