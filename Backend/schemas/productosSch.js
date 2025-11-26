@@ -46,4 +46,23 @@ const productoSchema = new mongoose.Schema({
         }
 });
 
+// Middleware para setear Estado automaticamente en create y save
+productoSchema.pre("save", function (next) {
+    this.Estado = this.Stock > 0 ? "Disponible" : "Agotado";
+    next();
+});
+
+// Middleware para update (findByIdAndUpdate / updateOne)
+productoSchema.pre("findOneAndUpdate", function (next) {
+    const update = this.getUpdate();
+
+    // Si Stock está siendo actualizado...
+    if (update.Stock !== undefined) {
+        update.Estado = update.Stock > 0 ? "Disponible" : "Agotado";
+        this.setUpdate(update);
+    }
+
+    next();
+});
+
 export default mongoose.model("productos", productoSchema);
