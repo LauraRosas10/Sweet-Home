@@ -6,8 +6,8 @@ import axios from "axios";
 import { useCart } from "../../context/CartContext.jsx";
 
 // URL de la API
-const API_CATEGORIAS_URL = "http://localhost:5100/api/categorias";
-const API_PRODUCTOS_URL = "http://localhost:5100/api/productos";
+const API_CATEGORIAS_URL = import.meta.env.VITE_API_CATEGORIAS;
+const API_PRODUCTOS_URL = import.meta.env.VITE_API_PRODUCTOS;
 
 const OTHER_CATEGORY_ID = "OTROS_ID_SIMBOLICO";
 

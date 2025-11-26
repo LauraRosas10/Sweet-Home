@@ -27,6 +27,9 @@ const { id } = useParams()
 const navigate = useNavigate()
 const { isDark } = useTheme()
 
+const prod= import.meta.env.VITE_API_PRODUCTOS;
+const cat= import.meta.env.VITE_API_CATEGORIAS;
+const user= import.meta.env.VITE_API_USUARIOS;
 
 
 const [product, setProduct] = useState(null)
@@ -45,7 +48,7 @@ useEffect(() => {
 useEffect(() => {
     const fetchProduct = async () => {
     try {
-        const response = await axios.get(`http://localhost:5100/api/productos/${id}`)
+        const response = await axios.get(`${prod}/${id}`)
         const p = response.data
         const normalizedProduct = {
         id: p._id,
@@ -102,7 +105,7 @@ const handleContactSeller = async () => {
 
         // Llama al endpoint de WhatsApp del backend
         const response = await axios.get(
-            `http://localhost:5100/api/usuarios/${product.userId}/whatsapp`,
+            `${user}/${product.userId}/whatsapp`,
             {
                 headers: {
                     Authorization: `Bearer ${token}` // Incluir el token para la verificación
