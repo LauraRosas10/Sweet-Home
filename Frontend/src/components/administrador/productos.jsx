@@ -107,9 +107,16 @@ export default function ProductList({ products, onEdit, onToggleStatus, onDelete
                                         </p>
                                         <div 
                                             // Llama a la función de cambio de estado
-                                            onClick={() => onToggleStatus && onToggleStatus(product.id)}
-                                            className={`flex items-center gap-2 px-3 py-1 rounded-full transition-all duration-300 cursor-pointer 
-                                                ${isAvailable ? "bg-green-100 dark:bg-green-900/50" : "bg-red-100 dark:bg-red-900/50"}`}
+                                            onClick={() => {
+                                                if (product.stock === 0) return; // ❌ Bloquea el click
+                                                onToggleStatus && onToggleStatus(product.id);
+                                            }}
+
+                                            className={`flex items-center gap-2 px-3 py-1 rounded-full transition-all duration-300
+                                                ${product.stock === 0 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+                                                ${isAvailable ? "bg-green-100 dark:bg-green-900/50" : "bg-red-100 dark:bg-red-900/50"}
+                                            `}
+
                                         >
                                             {isAvailable ? (
                                                 <>
