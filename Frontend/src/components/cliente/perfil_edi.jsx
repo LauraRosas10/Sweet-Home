@@ -328,10 +328,10 @@ export default function ProfilePage() {
           <div className="bg-gradient-to-r from-[#d4edff] to-[#e3f5ff] rounded-xl p-6 border border-[#90d5ff]/30 text-black">
             <h3 className="text-lg font-semibold mb-2">Información de Cuenta</h3>
             <p className="text-sm leading-relaxed">
-              Tu ID de usuario es: <code className="bg-white/50 px-2 py-0.5 rounded text-xs font-mono">{userId || "N/A (Falta Autenticación)"}</code>.
+              Información como el correo electrónico no puede ser modificada desde esta página. Si necesitas cambiar tu correo, por favor contacta al soporte.
             </p>
             <p className="text-sm leading-relaxed mt-1">
-              Recuerda que para que la página funcione, tu **servidor backend** debe estar corriendo en `http://localhost:5100`.
+              Recuerda mantener tu información actualizada para una mejor experiencia.
             </p>
           </div>
 

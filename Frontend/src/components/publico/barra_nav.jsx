@@ -93,7 +93,7 @@ return (
                 <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 dark:text-slate-300" />
                 <input
                     type="text"
-                    placeholder="Buscar productos..."
+                    placeholder="Buscar productos, categorias ..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     // 🟢 Agregamos el handler de la tecla Enter

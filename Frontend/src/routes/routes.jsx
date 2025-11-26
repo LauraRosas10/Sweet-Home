@@ -40,6 +40,7 @@ return (
         
         <Route path="/pagecarrito" element={<CartPage />} />
         
+        
         <Route path="/login" element={<ModalInicio />} />
         <Route path="/explorar" element={<ProductExplorer />} />
 
