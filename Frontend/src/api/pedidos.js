@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const general = import.meta.env.VITE_API_URL;
+
 const api = axios.create({
-  baseURL: "http://localhost:5100/api",
+  baseURL: general,
 });
 
 // Agregar token automáticamente
@@ -19,7 +21,7 @@ export const getMyPurchases = async () => {
 // Crear un pedido
 export const createOrder = async (orderData) => {
   try {
-    const res = await api.post("http://localhost:5100/api/pedidos", orderData);
+    const res = await api.post(`${general}/pedidos`, orderData);
     return res.data;
   } catch (error) {
     console.log("Error response:", error.response?.data); // <-- IMPORTANTE

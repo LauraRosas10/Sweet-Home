@@ -7,6 +7,9 @@ export default function ProductFormAdaptado({ editingId = null, productData = nu
   const userId = localStorage.getItem("userId");
 
   const [categorias, setCategorias] = useState([]);
+  const cat= import.meta.env.VITE_API_CATEGORIAS;
+  const prod= import.meta.env.VITE_API_PRODUCTOS;
+  const user= import.meta.env.VITE_API_USUARIOS;
 
   const [formData, setFormData] = useState({
     Nombre: "",
@@ -41,7 +44,7 @@ export default function ProductFormAdaptado({ editingId = null, productData = nu
   useEffect(() => {
     const loadCategorias = async () => {
       try {
-        const res = await axios.get("http://localhost:5100/api/categorias");
+        const res = await axios.get(`${cat}`);
         setCategorias(res.data);
       } catch (err) {
         console.error("Error cargando categorías", err);
@@ -98,7 +101,7 @@ export default function ProductFormAdaptado({ editingId = null, productData = nu
     try {
       if (editingId) {
         await axios.put(
-          `http://localhost:5100/api/productos/${editingId}`,
+          `${prod}/${editingId}`,
           payload,
           { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
         );
@@ -111,7 +114,7 @@ export default function ProductFormAdaptado({ editingId = null, productData = nu
         }
 
         await axios.post(
-          "http://localhost:5100/api/productos",
+          `${prod}`,
           payload,
           { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
         );

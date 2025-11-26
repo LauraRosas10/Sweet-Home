@@ -15,8 +15,9 @@ export default function SalesTransactions() {
     const [flattenedData, setFlattenedData] = useState([]); // <- Todos los productos
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const url= import.meta.env.VITE_API;
 
-    const API_URL = "http://localhost:5100";
+    const API_URL = `${url}`;
 
     useEffect(() => {
         const fetchSales = async () => {

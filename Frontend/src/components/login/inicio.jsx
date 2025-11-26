@@ -21,7 +21,7 @@ export function ModalInicio({ open, onOpenChange, onLoginSuccess }) {
     const [photoFile, setPhotoFile] = useState(null);
     const fileInputRef = useRef(null);
 
-    const API_URL = "http://localhost:5100"; // URL Backend
+    const API_URL = import.meta.env.VITE_API; // URL Backend
 
     // Función para mostrar mensajes temporales
     const displayMessage = (text, type) => {

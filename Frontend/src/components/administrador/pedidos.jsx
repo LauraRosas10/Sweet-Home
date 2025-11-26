@@ -4,6 +4,7 @@ export default function OrderManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
+  const pedidos= import.meta.env.VITE_API_URL;
 
   // 2. Inicializar orders con un arreglo vacío
   const [orders, setOrders] = useState([]);
@@ -37,7 +38,7 @@ export default function OrderManagement() {
       }
 
       try {
-        const response = await fetch("http://localhost:5100/api/pedidos/", { // Reemplaza con tu URL API
+        const response = await fetch(`${pedidos}/pedidos/`, { // Reemplaza con tu URL API
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -101,7 +102,7 @@ console.log("Pedidos formateados:", data);
     try {
       // Lógica para actualizar en el backend
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5100/api/pedidos/${updatedOrder.id}`, { // Reemplaza con tu URL API
+      const response = await fetch(`${pedidos}/pedidos/${updatedOrder.id}`, { // Reemplaza con tu URL API
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

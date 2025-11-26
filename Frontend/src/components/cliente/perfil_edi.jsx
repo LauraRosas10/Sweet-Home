@@ -77,7 +77,7 @@ export default function ProfilePage() {
         let message = "Error desconocido al cargar el perfil.";
 
         if (error.code === 'ERR_NETWORK') {
-          message = "Error de conexión. Asegúrate de que el servidor backend (http://localhost:5100) esté encendido.";
+          message = "Error de conexión. Asegúrate de que el servidor backend  esté encendido.";
         } else if (error.response) {
             if (error.response.status === 403) {
                 // Maneja el error 403 (Forbidden) reportado

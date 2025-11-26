@@ -14,6 +14,10 @@ export default function ProductManagement() {
   const [editingId, setEditingId] = useState(null);
   const [search, setSearch] = useState("");
 
+  const cat= import.meta.env.VITE_API_CATEGORIAS;
+  const prod= import.meta.env.VITE_API_PRODUCTOS;
+  const user= import.meta.env.VITE_API_USUARIOS;
+
   // 💠 Nueva: preview de imagen
   const [imagePreview, setImagePreview] = useState(null);
 
@@ -104,7 +108,7 @@ export default function ProductManagement() {
       }
     
       await axios.post(
-        "http://localhost:5100/api/productos",
+        `${prod}`,
         dataSend,
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
@@ -135,7 +139,7 @@ export default function ProductManagement() {
 
 
       await axios.put(
-        `http://localhost:5100/api/productos/${editingId}`,
+        `${prod}/${editingId}`,
         dataSend,
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
@@ -162,7 +166,7 @@ export default function ProductManagement() {
 
     try {
       await axios.put(
-        `http://localhost:5100/api/productos/${id}`,
+        `${prod}/${id}`,
         { Estado: newEstado },
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
@@ -205,7 +209,7 @@ export default function ProductManagement() {
   const fetchProducts = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5100/api/productos/mis/misproductos",
+        `${prod}/mis/misproductos`,
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
 
@@ -225,7 +229,7 @@ export default function ProductManagement() {
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
-        const res = await axios.get("http://localhost:5100/api/categorias");
+        const res = await axios.get(`${cat}`);
         setCategorias(res.data);
       } catch (err) {
         console.error(err);

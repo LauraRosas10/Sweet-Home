@@ -5,9 +5,9 @@ import { Plus, Image as ImageIcon } from "lucide-react";
 import { showToast } from "../toast.js";
 
 // Configuración de URLs
-const API_URL = "http://localhost:5100/api/productos";
-const API_CATEGORIAS_URL = "http://localhost:5100/api/categorias";
-const API_USUARIOS_URL = "http://localhost:5100/api/usuarios";
+const API_URL = import.meta.env.VITE_API_PRODUCTOS;
+const API_CATEGORIAS_URL = import.meta.env.VITE_API_CATEGORIAS;
+const API_USUARIOS_URL = import.meta.env.VITE_API_USUARIOS;
 
 
 /**
