@@ -6,10 +6,12 @@ class productoController {
 // Público: obtener todos los productos
 async getAll(req, res) {
     try {
-        const productos = await productoModel.getAll();
-        const productosFiltrados = productos.filter(p => p.Visible);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 12;
 
-        res.status(200).json(productosFiltrados);
+        const data = await productoModel.getAllPaginated(page, limit);
+
+        res.status(200).json(data);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }

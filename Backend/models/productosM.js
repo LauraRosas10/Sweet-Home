@@ -11,6 +11,23 @@ class productoModel {
             .populate("UsuarioCreador", "Nombre Email -_id"); 
     }
 
+    async getAllPaginated(page, limit) {
+    const skip = (page - 1) * limit;
+
+    const [total, productos] = await Promise.all([
+        Producto.countDocuments({ Visible: true }),
+
+        Producto.find({ Visible: true })
+            .skip(skip)
+            .limit(limit)
+            .select("Nombre Precio Stock Imagen Categoria") // selecciona lo necesario
+            .lean() // convierte a JSON directo, 50–100% más rápido
+    ]);
+
+    return { total, productos };
+}
+
+
     async getOneById(id) {
         return await Producto.findById(id)
             .populate("Categoria", "Nombre -_id");
