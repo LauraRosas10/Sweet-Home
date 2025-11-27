@@ -21,11 +21,7 @@ const {
 const [promoCode, setPromoCode] = useState("")
 const [isPromoOpen, setIsPromoOpen] = useState(false)
 
-const shipping = 5.0
-const taxRate = 0.084
 
-
-const taxes = subtotal * taxRate
 const total = subtotal 
 
 
@@ -155,14 +151,6 @@ return (
                     <div className="flex justify-between items-center text-base">
                     <p className="text-gray-600 dark:text-gray-400">Subtotal</p>
                     <p className="font-semibold text-gray-900 dark:text-white">${subtotal.toFixed(2)}</p>
-                    </div>
-                    <div className="flex justify-between items-center text-base">
-                    <p className="text-gray-600 dark:text-gray-400">Shipping</p>
-                    <p className="font-semibold text-gray-900 dark:text-white">${shipping.toFixed(2)}</p>
-                    </div>
-                    <div className="flex justify-between items-center text-base">
-                    <p className="text-gray-600 dark:text-gray-400">Taxes (8.4%)</p>
-                    <p className="font-semibold text-gray-900 dark:text-white">${taxes.toFixed(2)}</p>
                     </div>
                     <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent my-4"></div>
                     <div className="flex justify-between items-center">
