@@ -24,66 +24,67 @@ export default function Productos({ onCategoriesLoaded, search, filter }) {
 
   //SOLO UN FETCH — Categorías y Productos en paralelo
   useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        const [resCategorias, resProductos] = await Promise.all([
-          axios.get(API_CATEGORIAS_URL),
-          axios.get(API_PRODUCTOS_URL),
-        ]);
+  const fetchAll = async () => {
+    try {
+      const [resCategorias, resProductos] = await Promise.all([
+        axios.get(API_CATEGORIAS_URL),
+        axios.get(API_PRODUCTOS_URL),
+      ]);
 
-        // --- 1. PROCESAR CATEGORÍAS ---
-        const active = resCategorias.data.filter((c) => c.Activo);
+      // Procesar categorías
+      const active = resCategorias.data.filter((c) => c.Activo);
 
-        const map = {};
-        active.forEach((c) => (map[c._id] = c.Nombre));
-        setCategoryMap(map);
+      const map = {};
+      active.forEach((c) => (map[c._id] = c.Nombre));
+      setCategoryMap(map);
 
-        const categoryNames = active.map((c) => c.Nombre);
-        categoryNames.push("Otros");
+      const categoryNames = active.map((c) => c.Nombre);
+      categoryNames.push("Otros");
 
-        if (onCategoriesLoaded) {
-          onCategoriesLoaded(categoryNames);
+      if (onCategoriesLoaded) {
+        onCategoriesLoaded(categoryNames);
+      }
+
+      // Procesar productos
+      const availableAndVisible = resProductos.data.filter(
+        (p) => p.Estado === "Disponible" && p.Visible === true
+      );
+
+      const normalized = availableAndVisible.map((p) => {
+        let catId = null;
+        let catName = "Otros";
+
+        if (p.Categoria) {
+          if (typeof p.Categoria === "object" && p.Categoria !== null) {
+            catId = p.Categoria._id ? p.Categoria._id.toString() : null;
+            catName = p.Categoria.Nombre || "Otros";
+          } else if (typeof p.Categoria === "string") {
+            catId = p.Categoria;
+            catName = map[catId] || "Otros";
+          }
         }
 
-        // --- 2. PROCESAR PRODUCTOS ---
-        const availableAndVisible = resProductos.data.filter(
-          (p) => p.Estado === "Disponible" && p.Visible === true
-        );
+        return {
+          id: p._id,
+          name: p.Nombre,
+          price: p.Precio,
+          image: p.Imagen,
+          categoryId: catId || OTHER_CATEGORY_ID,
+          categoryName: catName,
+          stock: p.Stock,
+          Categoria: p.Categoria,
+        };
+      });
 
-        const normalized = availableAndVisible.map((p) => {
-          let catId = null;
-          let catName = "Otros";
+      setNormalizedProducts(normalized);
+    } catch (e) {
+      console.error("Error cargando datos:", e);
+    }
+  };
 
-          if (p.Categoria) {
-            if (typeof p.Categoria === "object" && p.Categoria !== null) {
-              catId = p.Categoria._id ? p.Categoria._id.toString() : null;
-              catName = p.Categoria.Nombre || "Otros";
-            } else if (typeof p.Categoria === "string") {
-              catId = p.Categoria;
-              catName = map[catId] || "Otros";
-            }
-          }
+  fetchAll();
+}, []); // <--- SOLO UNA VEZ
 
-          return {
-            id: p._id,
-            name: p.Nombre,
-            price: p.Precio,
-            image: p.Imagen,
-            categoryId: catId || OTHER_CATEGORY_ID,
-            categoryName: catName,
-            stock: p.Stock,
-            Categoria: p.Categoria,
-          };
-        });
-
-        setNormalizedProducts(normalized);
-      } catch (e) {
-        console.error("Error cargando datos:", e);
-      }
-    };
-
-    fetchAll();
-  }, [onCategoriesLoaded]);
 
   // 🔎 FILTRADO FINAL
   const filteredProducts = normalizedProducts.filter((p) => {
