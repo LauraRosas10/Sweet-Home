@@ -6,14 +6,13 @@ import passport from "./config/googleAuth.js";
 import dbClient from './config/dbClient.js';
 import fetch from "node-fetch";
 
-// Keep-alive (opcional)
+const app = express();
+
+// Keep-alive
 setInterval(() => {
-  fetch("https://sweet-home-46ww.onrender.com/api/productos")
-    .then(() => console.log("Keep-alive OK"))
+  fetch("https://sweet-home-46ww.onrender.com/api/ping")
     .catch(() => {});
 }, 5 * 60 * 1000);
-
-const app = express();
 
 // Body parsers
 app.use(express.json({ limit: '50mb' })); 
@@ -52,15 +51,33 @@ app.use('/api/categorias', routersCategoria);
 app.use('/api/pedidos', routerspedidos);
 app.use("/auth", googleAuthRoutes);
 
+// **PING**
+app.get("/api/ping", (req, res) => res.send("OK"));
+
 // Manejo errores
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Error interno del servidor" });
 });
 
-// Iniciar servidor SOLO UNA VEZ
-const PORT = process.env.PORT || 5100;
-app.listen(PORT, () => console.log('Servidor activo en el puerto ' + PORT));
+// 🚨 **INICIAR SERVIDOR SOLO DESPUÉS DE CONECTAR A MONGO**
+const startServer = async () => {
+  try {
+    console.log("Conectando a MongoDB...");
+    await dbClient.connectarBaseDatos();  // <--- AQUÍ
+    console.log("Mongo conectado ✔️");
+
+    const PORT = process.env.PORT || 5100;
+    app.listen(PORT, () =>
+      console.log("Servidor activo en puerto " + PORT)
+    );
+  } catch (error) {
+    console.error("Error al conectar a Mongo:", error);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 // Cerrar DB
 process.on('SIGINT', async () => {
