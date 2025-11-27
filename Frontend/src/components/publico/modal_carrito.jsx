@@ -22,7 +22,7 @@ const goToCartPage = () => {
     navigate("/pagecarrito") // ✅ CAMBIO PARA VITE
 }
 
-const shippingCost = 5.0
+
 
 
 
@@ -120,9 +120,7 @@ return (
             <p className="font-medium text-muted-foreground">Subtotal</p>
             <p className="font-medium text-foreground">${subtotal.toFixed(2)}</p>
             </div>
-            <div className="flex justify-between text-base">
-            <p className="font-medium text-foreground">${shippingCost.toFixed(2)}</p>
-            </div>
+
             <div className="flex justify-between text-lg font-bold">
             <p className="text-foreground">Total</p>
             <p className="text-[#256af4]">${total.toFixed(2)}</p>
