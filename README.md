@@ -14,11 +14,11 @@ Permite a los usuarios **publicar productos**, **comunicarse con vendedores** y 
 | ![Home](src_readme/home.png) | ![Login](src_readme/login.png) | ![Registro](src_readme/registro.png) |
 
 
-| Gestión de categorías | Catálogo de Productos | Gestión de Productos |
+| Catálogo de productos | Perfil del usuario | Carrito de compras |
 |------------------|-----------------------|----------------------|
 | ![categorias](src_readme/productos.png) | ![catalogo](src_readme/perfil.png) | ![productos](src_readme/carrito.png) |
 
-| Gestión de usuarios | 
+| Transacciones del usuario (ventas-compras)| 
 |----------|
 | ![usuarios](src_readme/transacciones.png) | 
 
