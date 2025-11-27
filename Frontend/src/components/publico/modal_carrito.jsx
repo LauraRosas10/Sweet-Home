@@ -121,7 +121,6 @@ return (
             <p className="font-medium text-foreground">${subtotal.toFixed(2)}</p>
             </div>
             <div className="flex justify-between text-base">
-            <p className="font-medium text-muted-foreground">Shipping</p>
             <p className="font-medium text-foreground">${shippingCost.toFixed(2)}</p>
             </div>
             <div className="flex justify-between text-lg font-bold">
