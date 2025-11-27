@@ -1,6 +1,6 @@
 # 🏡 Sweet Home - Sistema de Venta de Garage  
 
-**Spring Boot + JavaScript + MySQL**  
+**Express + React + MongoDB**  
 
 Sweet Home es una aplicación web para la **compra y venta de artículos usados**, tipo “venta de garage”.  
 Permite a los usuarios **publicar productos**, **comunicarse con vendedores** y **gestionar pedidos** fácilmente desde sus dispositivo.  
@@ -30,8 +30,7 @@ Permite a los usuarios **publicar productos**, **comunicarse con vendedores** y 
 - Pedidos
 - Búsqueda Avanzada — Filtra por nombre, categoría
 - Comunicación Directa — Contacto rápido entre comprador y vendedor  
-- Diseño Responsive 
-- Seguridad JWT — Autenticación y control de acceso con Spring Security  
+- Seguridad JWT 
 ---
 
 ##  Tabla de Contenido
@@ -63,6 +62,23 @@ Asegúrate de tener instalado:
 git clone https://github.com/LauraRosas10/Sweet-Home.git
 cd SweetHome
 ```
+
+## Frontend
+```bash
+npm install
+
+npm run dev
+```
+
+## Backend
+```bash
+
+npm install
+
+node app.js
+
+```
+
 
 
 
