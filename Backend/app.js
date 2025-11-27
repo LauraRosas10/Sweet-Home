@@ -6,6 +6,12 @@ import passport from "./config/googleAuth.js";
 import dbClient from './config/dbClient.js';
 import fetch from "node-fetch";
 
+setInterval(() => {
+  fetch("https://sweet-home-46ww.onrender.com/api/productos")
+    .then(() => console.log("Keep-alive OK"))
+    .catch(err => console.log("Keep-alive error:", err));
+}, 5 * 60 * 1000); // cada 5 min
+
 
 // Rutas
 import routersUsuario from './routers/usuariosR.js';
@@ -15,6 +21,7 @@ import routerProducto from './routers/productosR.js';
 import googleAuthRoutes from "./routers/googleR.js";
 
 const app = express();
+
 
 // Body parsers correctos
 app.use(express.json({ limit: '50mb' })); 
@@ -66,6 +73,3 @@ process.on('SIGINT', async () =>{
     process.exit(0);
 });
 
-setInterval(() => {
-  fetch("https://sweet-home-46ww.onrender.com/api/productos");
-}, 8 * 60 * 1000);
