@@ -57,15 +57,15 @@ return (
             <div className="space-y-3">
             <div className="flex items-center gap-3 text-sm">
                 <Mail className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                <span>contacto@marketplace.com</span>
+                <span>sweethome@gmail.com</span>
             </div>
             <div className="flex items-center gap-3 text-sm">
                 <Phone className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                <span>+1 (555) 123-4567</span>
+                <span>+57 321 654 9870</span>
             </div>
             <div className="flex items-center gap-3 text-sm">
                 <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                <span>Ciudad de México, México</span>
+                <span>Bucaramanga, Santander</span>
             </div>
             </div>
         </div>
